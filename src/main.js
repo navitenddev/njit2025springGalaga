@@ -17,16 +17,65 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("enemy", "/assets/enemy.png");
+    this.load.image("enemy1", "/assets/enemy1.png");
+    this.load.image("enemy2", "/assets/enemy2.png");
+    this.load.image("enemy3", "/assets/enemy3.png");
   }
 
   create() {
-    this.groupCenter = { x: 250, y: 100 }; // Fixed center point of the group
+    this.groupCenter = { x: 250, y: 150 }; // Fixed center point of the group
 
     this.enemies = [
-      { y: 0, enemiesAtLevel: [{ movePattern: "a" }, { movePattern: "b" }, { movePattern: "c" }] },
-      { y: 1, enemiesAtLevel: [{ movePattern: "d" }, { movePattern: "e" }] },
-      { y: 2, enemiesAtLevel: [{ movePattern: "f" }, { movePattern: "g" }, { movePattern: "h" }] }
+      { y: 0, enemiesAtLevel: [
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }
+      ] },
+      { y: 1, enemiesAtLevel: [
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }, 
+        { movePattern: "a", type: "enemy1" }
+      ] },
+      { y: 2, enemiesAtLevel: [
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }
+      ] },
+      { y: 3, enemiesAtLevel: [
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }, 
+        { movePattern: "b", type: "enemy2" }
+      ] },
+      { y: 4, enemiesAtLevel: [
+        { movePattern: "c", type: "enemy3" }, 
+        { movePattern: "c", type: "enemy3" }, 
+        { movePattern: "c", type: "enemy3" }, 
+        { movePattern: "c", type: "enemy3" }
+      ] }
     ];
 
     // Create the enemy sprites
@@ -41,7 +90,7 @@ class GameScene extends Phaser.Scene {
         let enemy = this.physics.add.sprite(
           startX + index * this.enemyGap,
           levelY,
-          "enemy"
+          data.type
         ).setScale(0.5);
 
         enemy.movePattern = data.movePattern;
@@ -53,7 +102,7 @@ class GameScene extends Phaser.Scene {
 
     // Move the group dynamically
     this.time.addEvent({
-      delay: 50,
+      delay: 500,
       callback: this.updateGroupMovement,
       callbackScope: this,
       loop: true
