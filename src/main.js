@@ -9,8 +9,11 @@ const sizes = {
 class GameScene extends Phaser.Scene {
   constructor() {
     super({ key: "GameScene" });
-    this.expansionFactor = 0; // Controls expansion & contraction of enemy group
-    this.timeElapsed = 0; // Tracks time for smooth movement
+    this.expansionFactor = 0;
+    this.timeElapsed = 0;
+    this.enemyGap = 28;
+    this.levelWidths = [];
+    this.enemySprites = [];
   }
 
   preload() {
@@ -18,34 +21,37 @@ class GameScene extends Phaser.Scene {
   }
 
   create() {
-    this.groupCenter = { x: 250, y: 200 }; // Fixed center point of the group
+    this.groupCenter = { x: 250, y: 100 }; // Fixed center point of the group
 
-    /* TO-DO:
-     * Allow for enemies on multiple y-levels
-     */
     this.enemies = [
-      { y: 0, movePattern: "a" },
-      { y: 0, movePattern: "b" },
-      { y: 0, movePattern: "c" },
-      { y: 0, movePattern: "d" },
-      { y: 0, movePattern: "e" },
+      { y: 0, enemiesAtLevel: [{ movePattern: "a" }, { movePattern: "b" }, { movePattern: "c" }] },
+      { y: 1, enemiesAtLevel: [{ movePattern: "d" }, { movePattern: "e" }] },
+      { y: 2, enemiesAtLevel: [{ movePattern: "f" }, { movePattern: "g" }, { movePattern: "h" }] }
     ];
 
+    // Create the enemy sprites
     this.enemySprites = [];
+    this.enemies.forEach((levelData) => {
+      const { y, enemiesAtLevel } = levelData;
+      const levelY = this.groupCenter.y - y * this.enemyGap; // Vertical position for this level
+      const totalWidth = (enemiesAtLevel.length - 1) * this.enemyGap;
+      const startX = this.groupCenter.x - totalWidth / 2;
 
-    this.enemies.forEach((data) => {
-      let enemy = this.physics.add.sprite(
-        this.groupCenter.x,
-        this.groupCenter.y + data.y,
-        "enemy"
-      );
-      
-      enemy.movePattern = data.movePattern;
-      enemy.followingGroup = true; // Initially part of the group
-      this.enemySprites.push(enemy);
+      enemiesAtLevel.forEach((data, index) => {
+        let enemy = this.physics.add.sprite(
+          startX + index * this.enemyGap,
+          levelY,
+          "enemy"
+        ).setScale(0.5);
+
+        enemy.movePattern = data.movePattern;
+        enemy.followingGroup = true;
+        enemy.yLevel = y;
+        this.enemySprites.push(enemy);
+      });
     });
 
-    // Move group dynamically
+    // Move the group dynamically
     this.time.addEvent({
       delay: 50,
       callback: this.updateGroupMovement,
@@ -55,21 +61,19 @@ class GameScene extends Phaser.Scene {
   }
 
   updateGroupMovement() {
-    /* TO-DO:
-     * Define baseSpacing using enemy width
-     */
     this.timeElapsed += 0.05;
-    let baseSpacing = 55; // Minimum gap between enemies
-    let expansionAmount = 10 * Math.sin(this.timeElapsed * 2);
+    let horizontalMovement = 50 * Math.sin(this.timeElapsed);
 
-    const numEnemies = this.enemySprites.length;
-    const totalWidth = (numEnemies - 1) * baseSpacing + expansionAmount; // Total spread of enemies, including expansion
-    const startX = this.groupCenter.x - totalWidth / 2; // Ensure the group is centered
+    this.enemies.forEach((levelData) => {
+      const { enemiesAtLevel } = levelData;
+      const totalWidth = (enemiesAtLevel.length - 1) * this.enemyGap;
+      const startX = this.groupCenter.x - totalWidth / 2;
 
-    this.enemySprites.forEach((enemy, index) => {
-      if (enemy.followingGroup) {
-        enemy.x = startX + index * baseSpacing + expansionAmount * (index / (numEnemies - 1)); // Evenly distribute expansion
-      }
+      enemiesAtLevel.forEach((_, index) => {
+        const enemy = this.enemySprites.shift();
+        enemy.x = startX + index * this.enemyGap + horizontalMovement;
+        this.enemySprites.push(enemy);
+      });
     });
   }
 }
@@ -82,7 +86,7 @@ const config = {
   physics: {
     default: "arcade",
     arcade: {
-      debug: false
+      debug: true
     }
   },
   scene: [GameScene]
