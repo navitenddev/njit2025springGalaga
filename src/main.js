@@ -1,6 +1,6 @@
 import './style.css'
 import Phaser from 'phaser'
-
+   
 const sizes = {
   width: 500,
   height: 500
@@ -16,9 +16,9 @@ class GameScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image("enemy1", "/assets/enemy1.png");
-    this.load.image("enemy2", "/assets/enemy2.png");
-    this.load.image("enemy3", "/assets/enemy3.png");
+    this.load.image("enemy1", "/assets/bossgalaga.png");
+    this.load.image("enemy2", "/assets/bossgalaga.png");
+    this.load.image("enemy3", "/assets/bossgalaga.png");
   }
 
   create() {
@@ -80,8 +80,15 @@ class GameScene extends Phaser.Scene {
         onUpdate: tween => {
           const t = tween.getValue();
           const position = path.getPoint(t);
+          const tangent = path.getTangent(t);
+
           if (position) {
             enemy.setPosition(position.x, position.y);
+          }
+
+          if (tangent) {
+            const angle = Math.atan2(tangent.y, tangent.x);
+            enemy.setRotation(angle);
           }
         },
         onComplete: () => {
