@@ -32,6 +32,10 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
             }
         });
     }
+    hits()
+    {
+        this.disableBody(true, true);
+    }
 }
 
 // Enemies class represents a group of enemy objects
@@ -167,11 +171,12 @@ class Bullet extends Phaser.Physics.Arcade.Sprite
 
     fire (x, y)
     {
-        this.body.reset(x, y);
-        this.setActive(true);
-        this.setVisible(true);
-
+        this.enableBody(true, x, y, true, true);
         this.setVelocityY(-300);
+    }
+    hits()
+    {
+        this.disableBody(true, true);
     }
 
     preUpdate (time, delta)
@@ -231,7 +236,6 @@ class Example extends Phaser.Scene
         this.player = this.physics.add.image( 100, 500, 'box');
         this.player.setCollideWorldBounds(true);
         
-
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys({ 
             'left': Phaser.Input.Keyboard.KeyCodes.A, 
@@ -249,6 +253,7 @@ class Example extends Phaser.Scene
             this.bullets.fireBullet(this.player.x, 450);
         });
 
+        this.physics.add.overlap(this.bullets, this.enemies, this.bullethit, null, this);
     }
     update ()
     {
@@ -261,9 +266,13 @@ class Example extends Phaser.Scene
     {
         this.player.setVelocityX(500);
     }
+    }
+    bullethit(bullet, enemy)
+    {
+        bullet.hits();
+        enemy.hits();
 
-    
-}
+    }
 }
 
 const config = {
