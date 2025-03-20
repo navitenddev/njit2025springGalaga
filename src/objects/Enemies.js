@@ -47,7 +47,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         ];
 
         this.enemiesData.forEach((levelData) => {
-            const levelY = levelData.y === 0 ? -50 : this.groupCenter.y - levelData.y * this.enemyGap;
+            const levelY = this.groupCenter.y - levelData.y * this.enemyGap;
             const totalWidth = (levelData.count - 1) * this.enemyGap;
             const startX = this.groupCenter.x - totalWidth / 2;
 
@@ -70,19 +70,28 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
     }
 
     initiatePathMovement() {
+        /* first entries
         const leftEntry = new Phaser.Curves.Path(550 / 3, -50);
-        leftEntry.splineTo([50, 700 / 2]);
+        leftEntry.splineTo([50, 350]);
         leftEntry.ellipseTo(100, 140, 200, 0, true);
 
         const rightEntry = new Phaser.Curves.Path(2 * 550 / 3, -50);
-        rightEntry.splineTo([550 - 50, 700 / 2]);
-        rightEntry.ellipseTo(100, 140, 160, 0, false, 180);
+        rightEntry.splineTo([500, 350]);
+        rightEntry.ellipseTo(100, 140, 160, 0, false, 180);*/
+
+        const leftEntry = new Phaser.Curves.Path(-50, 600);
+        leftEntry.splineTo([100, 550, 230, 450, 250, 400]);
+        leftEntry.circleTo(50, true, 0);
+
+        const rightEntry = new Phaser.Curves.Path(600, 600);
+        rightEntry.splineTo([450, 550, 320, 450, 300, 400]);
+        rightEntry.circleTo(50, false, 180);
 
         const tweens = [];
         const allEnemies = this.getChildren();
 
-        const leftGroup = allEnemies.slice(0, 5);
-        const rightGroup = allEnemies.slice(5, 10);
+        const leftGroup = [allEnemies[31], allEnemies[23], allEnemies[14], allEnemies[4]];
+        const rightGroup = [allEnemies[32], allEnemies[24], allEnemies[15], allEnemies[5]];
 
         // Left side entry
         leftGroup.forEach((enemy, index) => {
@@ -97,7 +106,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         // Start both left & right tweens at the same time
         this.scene.tweens.add({
             targets: tweens,
-            delay: 0,
+            delay: 0
         });
     }
 
@@ -139,7 +148,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
             x: targetX,
             y: targetY,
             ease: 'linear',
-            duration: 500,
+            duration: 1000
         });
     }
 
