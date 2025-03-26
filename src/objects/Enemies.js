@@ -12,7 +12,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.movePattern = movePattern;
         this.yLevel = yLevel;
         this.index = index;
-        this.col = col; 
+        this.col = col;
     }
 
     hits() {
@@ -25,39 +25,28 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         super(scene.physics.world, scene);
         this.scene = scene;
 
-        
         this.groupCenter = { x: 550 / 2, y: 200 };
         this.enemyGap = 36;
         this.timeElapsed = 0;
         this.currentStage = 1;
 
-        
         this.formationColumns = [
-            [0,1,2,3,4,5,6,7,8,9],   
-            [0,1,2,3,4,5,6,7,8,9],   
-            [1,2,3,4,5,6,7,8],       
-            [1,2,3,4,5,6,7,8],       
-            [3,4,5,6],               
+            [0,1,2,3,4,5,6,7,8,9],
+            [0,1,2,3,4,5,6,7,8,9],
+            [1,2,3,4,5,6,7,8],
+            [1,2,3,4,5,6,7,8],
+            [3,4,5,6],
         ];
 
-        
         this.enemiesData = [
-            { y: 0, type: "enemy1", count: 10, movePattern: "a" },
-            { y: 1, type: "enemy1", count: 10, movePattern: "a" },
-            { y: 2, type: "enemy2", count: 8,  movePattern: "b" },
+            { y: 0, type: "enemy1", count: 10, movePattern: "figure8" },
+            { y: 1, type: "enemy1", count: 10, movePattern: "loop" },
+            { y: 2, type: "enemy2", count: 8,  movePattern: "swoop" },
             { y: 3, type: "enemy2", count: 8,  movePattern: "b" },
             { y: 4, type: "enemy3", count: 4,  movePattern: "c" }
         ];
 
-        
         this.createEnemyGrid();
-
-        this.scene.time.addEvent({
-            delay: 1000,
-            callback: this.updateGroupMovement,
-            callbackScope: this,
-            loop: true,
-        });
 
         this.scene.time.addEvent({
             delay: 5000,
@@ -70,18 +59,16 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
     }
 
     createEnemyGrid() {
-    
         this.enemiesData.forEach((levelData) => {
             const rowIndex = levelData.y;
             const rowCols = this.formationColumns[rowIndex];
-
             const startY = (rowIndex === 0) ? -50 : this.groupCenter.y - rowIndex * this.enemyGap;
             const maxCols = 9; 
             const rowWidth = maxCols * this.enemyGap;
             const rowStartX = (550 / 2) - (rowWidth / 2);
 
             for (let i = 0; i < levelData.count; i++) {
-                const col = rowCols[i]; 
+                const col = rowCols[i];
                 const startX = rowStartX + col * this.enemyGap;
 
                 const enemy = new Enemy(
@@ -91,20 +78,21 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
                     levelData.type,
                     levelData.movePattern,
                     rowIndex,
-                    i,      
-                    col     
+                    i,
+                    col
                 );
                 this.add(enemy);
             }
         });
 
         this.initiatePathMovement();
+
+        this.applyExtraSplineMovements();
     }
 
     initiatePathMovement() {
         const allEnemies = this.getChildren();
 
-        
         const row0 = allEnemies.slice(0, 10);
         const row1 = allEnemies.slice(10, 20);
         const row2 = allEnemies.slice(20, 28);
@@ -122,7 +110,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         const [left3, right3] = splitRow(row3);
         const [left4, right4] = splitRow(row4);
 
-        
+    
         const leftEntry = new Phaser.Curves.Path(550 / 3, -50);
         leftEntry.splineTo([50, 700 / 2]);
         leftEntry.ellipseTo(100, 140, 200, 0, true);
@@ -149,26 +137,28 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         applyPath(right4, rightEntry);
     }
 
+    
     createTween(enemy, path, index = 1) {
         return this.scene.tweens.addCounter({
             from: 0,
             to: 1,
-            duration: 3000,
-            delay: 120 * index,
+            duration: 4000, 
+            delay: 5 * index, 
             onUpdate: (tween) => {
                 const t = tween.getValue();
-                const position = path.getPoint(t);
-                const tangent = path.getTangent(t);
+                const smoothT = Phaser.Math.Easing.Quintic.InOut(t);
+                const position = path.getPoint(smoothT);
+                const tangent = path.getTangent(smoothT);
 
                 if (position) {
                     enemy.setPosition(position.x, position.y);
                 }
                 if (tangent) {
-                    const angle = Math.atan2(tangent.y, tangent.x) + Math.PI / 2;
-                    enemy.setRotation(angle);
+                    enemy.setRotation(Math.atan2(tangent.y, tangent.x) + Math.PI / 2);
                 }
             },
             onComplete: () => {
+                console.log('[SWIRL COMPLETE]', 'Enemy index:', enemy.index);
                 this.moveToFinalGridPosition(enemy);
             }
         });
@@ -181,45 +171,29 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         const targetX = rowStartX + enemy.index * this.enemyGap;
         const targetY = this.groupCenter.y - enemy.yLevel * this.enemyGap;
 
-        
+        const maxCols = 9;
+        const rowWidth = maxCols * this.enemyGap;
+        const finalStartX = (550 / 2) - (rowWidth / 2);
+        const finalX = finalStartX + enemy.col * this.enemyGap;
+        const finalY = this.groupCenter.y - enemy.yLevel * this.enemyGap;
+
+        console.log('[MOVE TO FORMATION START]', 'Enemy index:', enemy.index);
+
         this.scene.tweens.add({
             targets: enemy,
-            x: targetX,
-            y: targetY,
-            ease: 'linear',
-            duration: 500,
+            x: finalX,
+            y: finalY,
+            rotation: 0,
+            ease: 'Sine.easeInOut',
+            duration: 1000,
+            onStart: () => {
+                console.log('[FINAL TWEEN START]', 'Enemy index:', enemy.index);
+            },
             onComplete: () => {
-                
-                const maxCols = 9;
-                const rowWidth = maxCols * this.enemyGap;
-                const finalStartX = (550 / 2) - (rowWidth / 2);
-
-                const finalX = finalStartX + enemy.col * this.enemyGap;
-                const finalY = this.groupCenter.y - enemy.yLevel * this.enemyGap;
-
-                this.scene.tweens.add({
-                    targets: enemy,
-                    x: finalX,
-                    y: finalY,
-                    ease: 'linear',
-                    duration: 500,
-                    onComplete: () => {
-                        this.ensureEnemySpacing();
-                    }
-                });
+                console.log('[MOVE TO FORMATION COMPLETE]', 'Enemy index:', enemy.index);
+                this.ensureEnemySpacing();
             }
         });
-    }
-
-    updateGroupMovement() {
-        this.timeElapsed += 0.05;
-        
-        const offset = 50 * Math.sin(this.timeElapsed);
-         this.getChildren().forEach((enemy) => {
-             if (!enemy.followingGroup) return;
-             enemy.targetX = enemy.targetX || enemy.x;
-             enemy.x = enemy.targetX + offset;
-         });
     }
 
     updateGroupCenter() {
@@ -278,7 +252,6 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
             { x: enemy.x - 50, y: 650 },
             { x: enemy.x + 50, y: 750 }
         ]);
-
         this.scene.tweens.addCounter({
             from: 0,
             to: 1,
@@ -292,6 +265,162 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
             },
             onComplete: () => {
                 enemy.destroy();
+            }
+        });
+    }
+
+    figure8Path(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        path.ellipseTo(40, 20, 180, 0, false, 0);
+        path.ellipseTo(40, 20, 180, 0, false, 180);
+        return path;
+    }
+
+    loopPath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        path.ellipseTo(50, 50, 360, 0, false);
+        return path;
+    }
+
+    swoopPath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        path.splineTo([
+            { x: x + 30, y: y + 50 },
+            { x: x - 30, y: y + 100 },
+            { x: x,    y: y + 150 }
+        ]);
+        return path;
+    }
+
+    zigzagPath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        path.splineTo([
+            { x: x + 50, y: y - 50 },
+            { x: x + 100, y: y + 50 },
+            { x: x + 150, y: y - 50 },
+            { x: x + 200, y: y + 50 }
+        ]);
+        return path;
+    }
+
+    spiralPath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        let points = [];
+        const a = 5;
+        const b = 5;
+        for (let theta = 0; theta <= Math.PI * 4; theta += Math.PI / 8) {
+            const r = a + b * theta;
+            points.push({ x: x + r * Math.cos(theta), y: y + r * Math.sin(theta) });
+        }
+        path.splineTo(points);
+        return path;
+    }
+
+    sineWavePath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        let points = [];
+        const amplitude = 30;
+        const length = 200;
+        for (let i = 1; i <= 10; i++) {
+            const newX = x + (length / 10) * i;
+            const newY = y + amplitude * Math.sin((i / 10) * Math.PI * 2);
+            points.push({ x: newX, y: newY });
+        }
+        path.splineTo(points);
+        return path;
+    }
+
+    arcPath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        let points = [];
+        const radiusX = 100;
+        const radiusY = 50;
+        for (let theta = 0; theta <= Math.PI; theta += Math.PI / 16) {
+            points.push({ x: x + radiusX * Math.cos(theta), y: y + radiusY * Math.sin(theta) });
+        }
+        path.splineTo(points);
+        return path;
+    }
+
+    parabolicPath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        let points = [];
+        const width = 200;
+        const height = 100;
+        for (let t = 0; t <= 1; t += 0.1) {
+            const newX = x + width * t;
+            const newY = y + height * Math.pow(t - 0.5, 2);
+            points.push({ x: newX, y: newY });
+        }
+        path.splineTo(points);
+        return path;
+    }
+
+
+    lissajousPath(x, y) {
+        const path = new Phaser.Curves.Path(x, y);
+        let points = [];
+        const amplitudeX = 50;
+        const amplitudeY = 30;
+        const frequencyX = 3;
+        const frequencyY = 2;
+        for (let theta = 0; theta <= Math.PI * 2; theta += Math.PI / 16) {
+            points.push({ 
+                x: x + amplitudeX * Math.sin(frequencyX * theta), 
+                y: y + amplitudeY * Math.sin(frequencyY * theta)
+            });
+        }
+        path.splineTo(points);
+        return path;
+    }
+
+    applyExtraSplineMovement(enemy, path, index = 0) {
+        console.log('[EXTRA SPLINE START]', 'Enemy index:', enemy.index, 'movePattern:', enemy.movePattern);
+
+        this.scene.tweens.addCounter({
+            from: 0,
+            to: 1,
+            duration: 4000, 
+            delay: 50 * index, 
+            onUpdate: (tween) => {
+                const t = tween.getValue();
+                const smoothT = Phaser.Math.Easing.Quintic.InOut(t);
+                const position = path.getPoint(smoothT);
+                const tangent = path.getTangent(smoothT);
+                if (position) {
+                    enemy.setPosition(position.x, position.y);
+                }
+                if (tangent) {
+                    enemy.setRotation(Math.atan2(tangent.y, tangent.x) + Math.PI / 2);
+                }
+            },
+            onComplete: () => {
+                console.log('[EXTRA SPLINE COMPLETE]', 'Enemy index:', enemy.index);
+                this.moveToFinalGridPosition(enemy);
+            }
+        });
+    }
+
+    applyExtraSplineMovements() {
+        this.getChildren().forEach((enemy, index) => {
+            if (enemy.movePattern === 'figure8') {
+                this.applyExtraSplineMovement(enemy, this.figure8Path(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'loop') {
+                this.applyExtraSplineMovement(enemy, this.loopPath(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'swoop') {
+                this.applyExtraSplineMovement(enemy, this.swoopPath(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'zigzag') {
+                this.applyExtraSplineMovement(enemy, this.zigzagPath(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'spiral') {
+                this.applyExtraSplineMovement(enemy, this.spiralPath(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'sine') {
+                this.applyExtraSplineMovement(enemy, this.sineWavePath(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'arc') {
+                this.applyExtraSplineMovement(enemy, this.arcPath(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'parabola') {
+                this.applyExtraSplineMovement(enemy, this.parabolicPath(enemy.x, enemy.y), index);
+            } else if (enemy.movePattern === 'lissajous') {
+                this.applyExtraSplineMovement(enemy, this.lissajousPath(enemy.x, enemy.y), index);
             }
         });
     }
