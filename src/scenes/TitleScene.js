@@ -7,12 +7,12 @@ export default class TitleScene extends Phaser.Scene {
 
     preload() {
         this.load.image('background', './assets/spaceTestImage.jpg');
-        this.load.audio('backgroundmusic', 'assets/audio/sampleMusic.mp3');
+        // this.load.audio('backgroundmusic', 'assets/audio/sampleMusic.mp3');
     }
 
     create() {
-        let music = this.sound.add('backgroundmusic', { loop: true });
-        music.play();
+        // let music = this.sound.add('backgroundmusic', { loop: true });
+        // music.play();
         this.add.image(this.scale.width / 2, this.scale.height / 2, "background").setDisplaySize(this.scale.width, this.scale.height);
         this.add.text(this.scale.width / 2, this.scale.height / 2 - 100, "Shermie Galaga", {
             fontSize: "38px",
@@ -25,8 +25,8 @@ export default class TitleScene extends Phaser.Scene {
             fontFamily: "Andale Mono",
         }).setOrigin(0.5, 0.5);
         this.input.keyboard.on('keydown-SPACE', () => {
-            this.scene.start("GameScene");
-            music.destroy();
+            this.scene.start("GameScene.js");
+           // music.destroy();
         });
     }
 }
