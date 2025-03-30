@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import GameScene from './GameScene';
 
 export default class TitleScene extends Phaser.Scene {
     constructor() {
@@ -24,8 +25,8 @@ export default class TitleScene extends Phaser.Scene {
             fill: "#ffffff",
             fontFamily: "Andale Mono",
         }).setOrigin(0.5, 0.5);
-        this.input.keyboard.on('keydown-SPACE', () => {
-            this.scene.start("GameScene.js");
+        this.input.keyboard.on('keydown-ENTER', () => {
+            this.scene.start("GameScene");
            // music.destroy();
         });
     }

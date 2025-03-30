@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 import Bullets from '../objects/Bullets';
 import Enemies from '../objects/Enemies';
+import PauseScene from './PauseScene';
 import Clone from '../objects/Clone';
 import PowerUp from '../objects/PowerUp';
 import { sizes } from '../config';
@@ -54,12 +55,8 @@ export default class GameScene extends Phaser.Scene {
             }
         });
         this.input.keyboard.on('keydown-P', () => {
-            if (this.scene.isPaused()) {
-                this.scene.resume();
-            } else { 
-                this.scene.pause();
-                this.scene.launch("PauseScene");
-            }
+            this.scene.switch('PauseScene');
+            //this.scene.pause('GameScene');
         });
 
         this.physics.add.overlap(this.bullets, this.enemies, this.bullethit, null, this);

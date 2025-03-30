@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import GameScene from './GameScene';
 
 export default class PauseScene extends Phaser.Scene {
     constructor() {
@@ -16,9 +17,9 @@ export default class PauseScene extends Phaser.Scene {
             fill: "#ffffff",
             fontFamily: "Andale Mono",
         }).setOrigin(0.5, 0.5);
-        this.input.keyboard.on('keydown-SPACE', () => {
-            this.scene.resume("GameScene");
-            this.scene.stop();
+        this.input.keyboard.on('keydown-ENTER', () => {
+            this.scene.switch('GameScene');
+            //this.scene.sleep('PauseScene');
         });
     }
 }
