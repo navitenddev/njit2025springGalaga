@@ -1,6 +1,7 @@
 import Phaser from 'phaser';
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
+    
     constructor(scene, x, y, texture, movePattern, yLevel, index) {
         super(scene, x, y, texture);
         scene.add.existing(this);
@@ -24,13 +25,14 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         super(scene.physics.world, scene);
         this.scene = scene;
         this.groupCenter = { x: 550 / 2, y: 200 };  // Fixed center point of the group
-        this.enemyGap = 36;
+        this.enemyGap = 37;
         this.timeElapsed = 0;
+        this.isbreathing = true;
 
         this.createEnemyGrid(); // Initialize enemy grid
-
+        
         this.scene.time.addEvent({
-            delay: 1000,
+            delay: 300,
             callback: this.updateGroupMovement,
             callbackScope: this,
             loop: true,
@@ -89,7 +91,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
 
         const tweens = [];
         const allEnemies = this.getChildren();
-
+ 
         const leftGroup = [allEnemies[31], allEnemies[23], allEnemies[14], allEnemies[4]];
         const rightGroup = [allEnemies[32], allEnemies[24], allEnemies[15], allEnemies[5]];
 
@@ -137,10 +139,12 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
     }
 
     moveToFinalGridPosition(enemy) {
+        const offset = 50 * Math.sin(this.timeElapsed);
         const levelData = this.enemiesData[enemy.yLevel];
         const totalWidth = (levelData.count - 1) * this.enemyGap;
         const startX = this.groupCenter.x - totalWidth / 2;
-        const targetX = startX + enemy.index * this.enemyGap;
+        let targetX = offset + startX + enemy.index * this.enemyGap;
+        if (this.isbreathing) targetX = enemy.x + ((targetX - 275) * (offset / 3000));
         const targetY = this.groupCenter.y - enemy.yLevel * this.enemyGap;
 
         this.scene.tweens.add({
@@ -153,13 +157,19 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
     }
 
     updateGroupMovement() {
-        this.timeElapsed += 0.05;
         const offset = 50 * Math.sin(this.timeElapsed);
-
+        this.timeElapsed += 0.1;
         this.getChildren().forEach((enemy) => {
-            if (!enemy.followingGroup) return;
-            enemy.targetX = enemy.targetX || enemy.x;
-            enemy.x = enemy.targetX + offset;
+
+            const levelData = this.enemiesData[enemy.yLevel];
+            const totalWidth = (levelData.count - 1) * this.enemyGap;
+            const startX = this.groupCenter.x - totalWidth / 2;
+            const targetX = startX + enemy.index * this.enemyGap;
+            const targetY = this.groupCenter.y - enemy.yLevel * this.enemyGap;
+
+            if (this.isbreathing) enemy.x = enemy.x + ((targetX - 275) * (offset / 3000));
+            else enemy.x = targetX + offset;
+            console.log("start: ", targetX, "x: ", enemy.x);
         });
     }
 }
