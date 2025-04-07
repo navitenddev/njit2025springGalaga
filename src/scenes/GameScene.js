@@ -59,7 +59,8 @@ export default class GameScene extends Phaser.Scene {
             //this.scene.pause('GameScene');
         });
 
-        this.physics.add.overlap(this.bullets, this.enemies, this.bullethit, null, this);
+        this.physics.add.overlap(this.bullets, this.enemies, this.bulletHit, null, this);
+        this.physics.add.overlap(this.player, this.enemies, this.playerHit, null, this);
         this.physics.add.overlap(this.player, powerUp, () => {
             powerUp.collect(this.player, this.bullets);
             
@@ -77,8 +78,13 @@ export default class GameScene extends Phaser.Scene {
             this.clone.followPlayer(this.player);
         }
     }
-    bullethit(bullet, enemy) {
+    bulletHit(bullet, enemy) {
         bullet.hits();
         enemy.hits();
+    }
+    playerHit(player, enemy) {
+        enemy.destroy();
+        player.setVisible(false);
+        
     }
 }
