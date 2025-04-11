@@ -18,6 +18,12 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         this.enemyGroup = enemyGroup;
     }
 
+    shoot(bullets) {
+        if (this.active) {
+            bullets.fireBullet(this.x, this.y + 30); // Shoot from slightly below enemy
+        }
+    }
+
     hits() {
         this.destroy();
     }
