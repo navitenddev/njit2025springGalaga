@@ -36,20 +36,20 @@ export default class GameScene extends Phaser.Scene {
         let powerUp = new PowerUp(this, sizes.width / 2 + 100, sizes.height - 50);
 
         this.input.keyboard.on('keydown-SPACE', () => {
-            this.bullets.fireBullet(this.player.x, this.player.y - 50);
+            this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }
         });
         this.input.keyboard.on('keydown-W', () => {
             console.log(this.player.x, this.player.y);
-            this.bullets.fireBullet(this.player.x, this.player.y - 50);
+            this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }
         });
         this.input.keyboard.on('keydown-UP', () => {
-            this.bullets.fireBullet(this.player.x, this.player.y - 50);
+            this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }

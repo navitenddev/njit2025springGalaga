@@ -16,7 +16,7 @@ class Clone extends Phaser.Physics.Arcade.Sprite {
     }
 
     shoot(bullets) {
-        bullets.fireBullet(this.x, this.y - 50);
+        bullets.fireBullet(this.x, this.y - 20);
     }
 }
 export default Clone;
