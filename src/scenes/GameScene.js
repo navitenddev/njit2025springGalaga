@@ -13,7 +13,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('box', './assets/box.png');
+        this.load.image('player', './assets/player.png');
         this.load.image('bullet', './assets/bullet.png');
         this.load.image("enemy1", "./assets/enemy1.png");
         this.load.image("enemy2", "./assets/enemy2.png");
@@ -24,8 +24,8 @@ export default class GameScene extends Phaser.Scene {
     create() {
         this.bullets = new Bullets(this);
         this.enemies = new Enemies(this);
-        this.player = this.physics.add.image(sizes.width / 2, sizes.height - 50, 'box');
-        this.player.setScale(0.5);
+        this.player = this.physics.add.image(sizes.width / 2, sizes.height - 50, 'player');
+        this.player.setScale(1.5);
         this.player.setCollideWorldBounds(true);
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys({
