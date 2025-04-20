@@ -2,17 +2,17 @@ import Phaser from 'phaser';
 import { sizes } from '../config';
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
-    
-    constructor(scene, x, y, texture, movePattern, yLevel, index, enemyGroup) {
+
+    constructor(scene, x, y, texture, yLevel, index, enemyGroup) {
         super(scene, x, y, texture);
         scene.add.existing(this);
         scene.physics.add.existing(this);
-        this.setScale(0.5);
         this.setOrigin(0.5);
+        this.setScale(1.2)
+        this.setSize(25, 25);
         this.body.moves = false;
         this.isDiving = false;  // ADDED: isDiving to avoid calling startDiving on an already diving enemy
 
-        this.movePattern = movePattern;
         this.yLevel = yLevel;
         this.index = index;
         this.enemyGroup = enemyGroup;
@@ -31,7 +31,7 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
         divePath.ellipseTo(90, 300, 300, 60, false);
 
         createTween(this.scene, this, divePath, 0, 5000, () => {
-            if (this.y > sizes.height) this.y = -50
+            if (this.y > sizes.height) this.y = -50;
             this.enemyGroup.moveToFinalGridPosition(this);
             this.isDiving = false;
         });
@@ -42,13 +42,14 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
     constructor(scene) {
         super(scene.physics.world, scene);
         this.scene = scene;
-        this.groupCenter = { x: 550 / 2, y: 200 };  // Fixed center point of the group
-        this.enemyGap = 37;
+        this.groupCenter = { x: 550 / 2, y: 160 };  // Fixed center point of the group
+        this.horizontalGap = 40;
+        this.verticalGap = 30;
         this.timeElapsed = 0;
         this.isbreathing = false;   // CHANGED: Disabled breathing for testing
 
         this.createEnemyGrid(); // Initialize enemy grid
-        
+
         /* CHANGED: Disabled group movement for testing
         this.scene.time.addEvent({
             delay: 300,
@@ -60,25 +61,24 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
 
     createEnemyGrid() {
         this.enemiesData = [
-            { y: 0, type: "enemy1", count: 10, movePattern: "a" },
-            { y: 1, type: "enemy1", count: 10, movePattern: "a" },
-            { y: 2, type: "enemy2", count: 8, movePattern: "b" },
-            { y: 3, type: "enemy2", count: 8, movePattern: "b" },
-            { y: 4, type: "enemy3", count: 4, movePattern: "c" }
+            { y: 0, type: "enemy1", count: 10 },
+            { y: 1, type: "enemy1", count: 10 },
+            { y: 2, type: "enemy2", count: 8 },
+            { y: 3, type: "enemy2", count: 8 },
+            { y: 4, type: "boss", count: 4 }
         ];
 
         this.enemiesData.forEach((levelData) => {
-            const levelY = this.groupCenter.y - levelData.y * this.enemyGap;
-            const totalWidth = (levelData.count - 1) * this.enemyGap;
+            const levelY = -50;
+            const totalWidth = (levelData.count - 1) * this.horizontalGap;
             const startX = this.groupCenter.x - totalWidth / 2;
 
             for (let i = 0; i < levelData.count; i++) {
                 const enemy = new Enemy(
                     this.scene,
-                    startX + i * this.enemyGap,
+                    startX + i * this.horizontalGap,
                     levelY,
                     levelData.type,
-                    levelData.movePattern,
                     levelData.y,
                     i,
                     this
@@ -89,82 +89,180 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         });
 
         this.initiatePathMovement();
+        /*
         this.scene.time.delayedCall(5500, () => {
             this.getChildren()[0].startDive();
-        });
+        });*/
     }
 
     initiatePathMovement() {
-        /* first entries
-        const leftEntry = new Phaser.Curves.Path(550 / 3, -50);
-        leftEntry.splineTo([50, 350]);
-        leftEntry.ellipseTo(100, 140, 200, 0, true);
+        // ADDED: Graphics for visualizing paths
+        const graphics = this.scene.add.graphics();
+        graphics.lineStyle(2, 0xff0000, 1);
 
-        const rightEntry = new Phaser.Curves.Path(2 * 550 / 3, -50);
-        rightEntry.splineTo([500, 350]);
-        rightEntry.ellipseTo(100, 140, 160, 0, false, 180);*/
+        const groupAleftEntry = new Phaser.Curves.Path(550 / 3, -50);
+        groupAleftEntry.splineTo([50, 350]);
+        groupAleftEntry.ellipseTo(100, 140, 200, 0, true, 0);
+        // groupAleftEntry.draw(graphics);
 
-        const leftEntry = new Phaser.Curves.Path(-50, 600);
-        leftEntry.splineTo([100, 550, 230, 450, 250, 400]);
-        leftEntry.circleTo(50, true, 0);
+        const groupArightEntry = new Phaser.Curves.Path(2 * 550 / 3, -50);
+        groupArightEntry.splineTo([500, 350]);
+        groupArightEntry.ellipseTo(100, 140, 160, 0, false, 180);
+        // groupArightEntry.draw(graphics);
 
-        const rightEntry = new Phaser.Curves.Path(600, 600);
-        rightEntry.splineTo([450, 550, 320, 450, 300, 400]);
-        rightEntry.circleTo(50, false, 180);
+        const groupBEntry = new Phaser.Curves.Path(-50, 600);
+        groupBEntry.splineTo([100, 550, 230, 450, 250, 400]);
+        groupBEntry.ellipseTo(80, 80, 0, 360, true, 0);
+        groupBEntry.splineTo([[260, 300, 270, 250]]);
+        // groupBEntry.draw(graphics);
 
-        const tweens = [];
+        const groupCEntry = new Phaser.Curves.Path(600, 600);
+        groupCEntry.splineTo([450, 550, 320, 450, 300, 400]);
+        groupCEntry.ellipseTo(80, 80, 0, 360, false, 180);
+        groupCEntry.splineTo([[290, 300, 260, 250]]);
+        // groupCEntry.draw(graphics);
+
+        const groupDEntry = new Phaser.Curves.Path(450, -50);
+        groupDEntry.splineTo([70, 100, 80, 200, 400, 300]);
+        groupDEntry.ellipseTo(100, 80, 20, 260, false, 260);
+        //groupDEntry.draw(graphics);
+
+        const groupEEntry = new Phaser.Curves.Path(100, -50);
+        groupEEntry.splineTo([480, 100, 470, 200, 150, 300]);
+        groupEEntry.ellipseTo(100, 80, 340, 100, true, 280);
+        //groupEEntry.draw(graphics);
+
         const allEnemies = this.getChildren();
- 
-        const leftGroup = [allEnemies[31], allEnemies[23], allEnemies[14], allEnemies[4]];
-        const rightGroup = [allEnemies[32], allEnemies[24], allEnemies[15], allEnemies[5]];
 
-        // Left side entry
-        leftGroup.forEach((enemy, index) => {
-            tweens.push(createTween(this.scene, enemy, leftEntry, index, 3000, () => {
+        const groupA = [
+            [allEnemies[31], allEnemies[32], allEnemies[23], allEnemies[24]],
+            [allEnemies[14], allEnemies[15], allEnemies[4], allEnemies[5]]
+        ];
+        const groupB = [
+            allEnemies[36], allEnemies[30], allEnemies[39], allEnemies[33],
+            allEnemies[37], allEnemies[25], allEnemies[38], allEnemies[22]
+        ];
+        const groupC = [
+            allEnemies[29], allEnemies[34], allEnemies[21], allEnemies[26],
+            allEnemies[28], allEnemies[35], allEnemies[20], allEnemies[27]
+        ];
+        const groupD = [
+            allEnemies[16], allEnemies[13], allEnemies[6], allEnemies[3],
+            allEnemies[17], allEnemies[2], allEnemies[7], allEnemies[12]
+        ];
+        const groupE = [
+            allEnemies[10], allEnemies[11], allEnemies[18], allEnemies[19],
+            allEnemies[0], allEnemies[1], allEnemies[8], allEnemies[9]
+        ];
+
+        const entryDuration = 2000;
+        const groupEntryDelay = 3000;
+
+        // Group A left side entry
+        groupA[0].forEach((enemy, index) => {
+            createTween(this.scene, enemy, groupAleftEntry, index, entryDuration, () => {
                 this.moveToFinalGridPosition(enemy);
-            }));
+            });
         });
 
-        // Right side entry
-        rightGroup.forEach((enemy, index) => {
-            tweens.push(createTween(this.scene, enemy, rightEntry, index, 3000, () => {
+        // Group A right side entry
+        groupA[1].forEach((enemy, index) => {
+            createTween(this.scene, enemy, groupArightEntry, index, entryDuration, () => {
                 this.moveToFinalGridPosition(enemy);
-            }));
+            });
         });
 
-        // Start both left & right tweens at the same time
-        this.scene.tweens.add({
-            targets: tweens,
-            delay: 0
+        this.scene.time.delayedCall(groupEntryDelay * 1, () => {
+            // Group B entry
+            groupB.forEach((enemy, index) => {
+                createTween(this.scene, enemy, groupBEntry, index, entryDuration, () => {
+                    this.moveToFinalGridPosition(enemy);
+                });
+            });
+        });
+
+        this.scene.time.delayedCall(groupEntryDelay * 2, () => {
+            // Group C entry
+            groupC.forEach((enemy, index) => {
+                createTween(this.scene, enemy, groupCEntry, index, entryDuration, () => {
+                    this.moveToFinalGridPosition(enemy);
+                });
+            });
+        });
+
+        this.scene.time.delayedCall(groupEntryDelay * 3, () => {
+            // Group D entry
+            groupD.forEach((enemy, index) => {
+                createTween(this.scene, enemy, groupDEntry, index, entryDuration * 1.4, () => {
+                    this.moveToFinalGridPosition(enemy);
+                });
+            });
+        });
+
+        this.scene.time.delayedCall(groupEntryDelay * 4.3, () => {
+            // Group E entry
+            groupE.forEach((enemy, index) => {
+                createTween(this.scene, enemy, groupEEntry, index, entryDuration * 1.4, () => {
+                    this.moveToFinalGridPosition(enemy);
+                });
+            });
         });
     }
 
+
     moveToFinalGridPosition(enemy) {
+        // Ensure enemy keeps the same speed when moving to final position
+        const dx = enemy.x - enemy.prevX;
+        const dy = enemy.y - enemy.prevY;
+        const lastDistance = Math.sqrt(dx * dx + dy * dy);
+        const frameTime = 1000/60 // 1 frame at 60fps
+        let estimatedSpeed = lastDistance / (frameTime / 1000); // pixels per second
+
+        // Calculate target position
         const offset = 50 * Math.sin(this.timeElapsed);
         const levelData = this.enemiesData[enemy.yLevel];
-        const totalWidth = (levelData.count - 1) * this.enemyGap;
+        const totalWidth = (levelData.count - 1) * this.horizontalGap;
         const startX = this.groupCenter.x - totalWidth / 2;
-        let targetX = offset + startX + enemy.index * this.enemyGap;
+        let targetX = offset + startX + enemy.index * this.horizontalGap;
         if (this.isbreathing) targetX = enemy.x + ((targetX - 275) * (offset / 3000));
-        const targetY = this.groupCenter.y - enemy.yLevel * this.enemyGap;
-    
+        const targetY = this.groupCenter.y - enemy.yLevel * this.verticalGap;
+
+        const distanceToTarget = Phaser.Math.Distance.Between(enemy.x, enemy.y, targetX, targetY);
+        const duration = (distanceToTarget / estimatedSpeed) * 1000; // convert to ms
+        
         // CHANGED: Adjusted spline creation to fit with createTween
-        // NOTE: Needs to be cleaned up, and can probably use createTween for all
         if (enemy.isDiving) {
             const path = new Phaser.Curves.Path(enemy.x, enemy.y);
             path.splineTo([targetX, targetY]);
-            createTween(this.scene, enemy, path, enemy.index, 1000, () => {enemy.setRotation(0)});
+            createTween(this.scene, enemy, path, enemy.index, 1000, () => { enemy.setRotation(0) });
         } else {
+            let prevX = enemy.x;
+            let prevY = enemy.y;
+
             this.scene.tweens.add({
                 targets: enemy,
                 x: targetX,
                 y: targetY,
                 ease: 'linear',
-                duration: 1000
+                duration: duration,
+                onUpdate: () => {
+                    // Rotate enemies throughout the path
+                    const spriteFacingOffset = Phaser.Math.DegToRad(90); // if sprite faces up
+                    const angle = Phaser.Math.Angle.Between(prevX, prevY, enemy.x, enemy.y);
+                    enemy.rotation = Phaser.Math.Angle.RotateTo(enemy.rotation, angle + spriteFacingOffset, 0.1);
+                },
+                onComplete: () => {
+                    // Slowly turn enemies to face upwards
+                    this.scene.tweens.add({
+                        targets: enemy,
+                        rotation: 0,
+                        duration: 100,
+                        ease: 'Sine.easeOut'
+                    });
+                }
             });
         }
     }
-    
 
     updateGroupMovement() {
         const offset = 50 * Math.sin(this.timeElapsed);
@@ -172,10 +270,10 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         this.getChildren().forEach((enemy) => {
 
             const levelData = this.enemiesData[enemy.yLevel];
-            const totalWidth = (levelData.count - 1) * this.enemyGap;
+            const totalWidth = (levelData.count - 1) * this.horizontalGap;
             const startX = this.groupCenter.x - totalWidth / 2;
-            const targetX = startX + enemy.index * this.enemyGap;
-            const targetY = this.groupCenter.y - enemy.yLevel * this.enemyGap;
+            const targetX = startX + enemy.index * this.horizontalGap;
+            const targetY = this.groupCenter.y - enemy.yLevel * this.horizontalGap;
 
             if (this.isbreathing) enemy.x = enemy.x + ((targetX - 275) * (offset / 3000));
             else enemy.x = targetX + offset;
@@ -185,21 +283,24 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
 }
 
 // CHANGED: extracted createTween to be used by both Enemy and EnemyGroup
-export function createTween(scene, enemy, path, index = 0, duration, onComplete = () => {}) {
+export function createTween(scene, enemy, path, index = 0, duration, onComplete = () => { }) {
     return scene.tweens.addCounter({
         from: 0,
         to: 1,
         duration: duration,
-        delay: 120 * index,
+        delay: 80 * index,
         onUpdate: (tween) => {
             const t = tween.getValue();
             const position = path.getPoint(t);
             const tangent = path.getTangent(t);
 
             if (position) {
+                enemy.prevX = enemy.x;  
+                enemy.prevY = enemy.y;
                 enemy.setPosition(position.x, position.y);
             }
 
+            // Rotate enemy throughout the path
             if (tangent) {
                 const angle = Math.atan2(tangent.y, tangent.x) + Math.PI / 2;
                 enemy.setRotation(angle);
