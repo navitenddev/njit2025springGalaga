@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { sizes } from '../config';
 
 class Enemy extends Phaser.Physics.Arcade.Sprite {
   constructor(scene, x, y, texture, movePattern, yLevel, index, col) {
@@ -16,7 +17,18 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
   }
 
   hits() {
+    if (Math.random() < 0.3) {
+      if (!this.scene.powerUpsGroup) {
+        this.scene.powerUpsGroup = this.scene.physics.add.group();
+      }
+      const p = new PowerUp(this.scene, this.x, this.y);
+      this.scene.powerUpsGroup.add(p);
+      p.setVelocityY(100);
+    }
     this.destroy();
+    if (this.scene.enemyGroupRef && this.scene.enemyGroupRef.checkWaveClear) {
+      this.scene.enemyGroupRef.checkWaveClear();
+    }
   }
 }
 
@@ -60,6 +72,9 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
     this.enemyGap = 36;
     this.timeElapsed = 0;
     this.currentStage = 1;
+    this.speedMultiplier = 1;
+    this.firingInterval = 3000;
+    this.enemyFireEvents = [];
 
     this.formationColumns = [
       [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -76,6 +91,8 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
       { y: 3, type: "enemy2", count: 8,  movePattern: "beam" },    
       { y: 4, type: "enemy3", count: 4,  movePattern: "bullet" }   
     ];
+
+    this.scene.enemyGroupRef = this;
 
     this.createEnemyGrid();
 
@@ -114,11 +131,31 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
           col
         );
         this.add(enemy);
+        this.scheduleEnemyFire(enemy);
       }
     });
 
     this.initiatePathMovement();
     this.applyExtraSplineMovements();
+  }
+
+  scheduleEnemyFire(enemy) {
+    const evt = this.scene.time.addEvent({
+      delay: this.firingInterval,
+      loop: true,
+      callback: () => {
+        if (enemy.active) {
+          this.regularBulletAttack(enemy);
+        }
+      }
+    });
+    this.enemyFireEvents.push(evt);
+  }
+
+  resetFireTimers() {
+    this.enemyFireEvents.forEach(e => e.remove(false));
+    this.enemyFireEvents = [];
+    this.getChildren().forEach(e => this.scheduleEnemyFire(e));
   }
 
   initiatePathMovement() {
@@ -171,6 +208,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
       from: 0,
       to: 1,
       duration: 4000,
+      duration: 4000 / this.speedMultiplier,
       delay: 5 * index,
       onUpdate: (tween) => {
         const t = tween.getValue();
@@ -247,6 +285,17 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         enemy.movePattern = 'c';
       }
     });
+    if (this.currentStage === 1) {
+      this.speedMultiplier = 1;
+      this.firingInterval = 3000;
+    } else if (this.currentStage === 2) {
+      this.speedMultiplier = 1.5;
+      this.firingInterval = 2000;
+    } else if (this.currentStage === 3) {
+      this.speedMultiplier = 2;
+      this.firingInterval = 1200;
+    }
+    this.resetFireTimers();
   }
 
   getGridCoordinates(row, col) {
@@ -407,6 +456,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
       x: targetX,
       y: targetY,
       duration: 800,
+      duration: 800 / this.speedMultiplier,
       ease: 'Quad.easeIn',
       yoyo: true,
       onComplete: () => {
@@ -432,6 +482,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
       targets: beam,
       scaleY: 2,
       duration: 500,
+      duration: 500 / this.speedMultiplier,
       onComplete: () => {
         console.log('[BOSS BEAM ATTACK COMPLETE] Enemy index:', enemy.index);
         beam.destroy();
@@ -449,8 +500,9 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
     }
     const angle = Phaser.Math.Angle.Between(enemy.x, enemy.y, this.scene.player.x, this.scene.player.y);
     const speed = 300;
-    bullet.setVelocityX(speed * Math.cos(angle));
-    bullet.setVelocityY(speed * Math.sin(angle));
+    const speedAdjusted = speed * this.speedMultiplier;
+    bullet.setVelocityX(speedAdjusted * Math.cos(angle));
+    bullet.setVelocityY(speedAdjusted * Math.sin(angle));
     console.log('[BULLET FIRED] Enemy index:', enemy.index);
   }
 
@@ -490,6 +542,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
       from: 0,
       to: 1,
       duration: 4000,
+      duration: 4000 / this.speedMultiplier,
       delay: 50 * index,
       onUpdate: (tween) => {
         const t = tween.getValue();
@@ -508,6 +561,15 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         this.moveToFinalGridPosition(enemy);
       }
     });
+  }
+
+  checkWaveClear() {
+    if (this.countActive(true) === 0) {
+      this.currentStage = (this.currentStage % 3) + 1;
+      this.setupStageOrders();
+      this.clear(true, true);
+      this.createEnemyGrid();
+    }
   }
 }
 
@@ -538,5 +600,15 @@ export class Bullet extends Phaser.Physics.Arcade.Sprite {
     this.setActive(false);
     this.setVisible(false);
     this.setPosition(this.scene.cameras.main.centerX, -20);
+  }
+}
+
+export class PowerUp extends Phaser.Physics.Arcade.Sprite {
+  constructor(scene, x, y) {
+    super(scene, x, y, 'powerup');
+    scene.add.existing(this);
+    scene.physics.add.existing(this);
+    this.body.allowGravity = false;
+    this.setVelocityY(100);
   }
 }

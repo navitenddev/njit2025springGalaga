@@ -1,13 +1,12 @@
 import Phaser from 'phaser';
 
-class Bullet extends Phaser.Physics.Arcade.Sprite {
+class enemyBullet extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
-        super(scene, x, y, 'bullet');
+        super(scene, x, y, 'enemyBullet');
     }
-
     fire(x, y) {
         this.enableBody(true, x, y, true, true);
-        this.setVelocityY(-400);
+        this.setVelocityY(300);
     }
 
     hits() {
@@ -31,11 +30,11 @@ export default class BulletContainer extends Phaser.Physics.Arcade.Group {
         super(scene.physics.world, scene);
 
         this.createMultiple({
-            frameQuantity: 2,
-            key: 'bullet',
+            frameQuantity: 20,
+            key: 'enemyBullet',
             active: false,
             visible: false,
-            classType: Bullet
+            classType: enemyBullet
         });
     }
 
