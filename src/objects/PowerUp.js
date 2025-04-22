@@ -18,7 +18,6 @@ class PowerUp extends Phaser.Physics.Arcade.Sprite {
         player.scene.add.existing(clone);
         player.scene.physics.add.existing(clone);
         player.scene.clone = clone;
-        clone.shoot(bullets);
 
         this.timerEvent = player.scene.time.addEvent({
             delay: this.duration,
