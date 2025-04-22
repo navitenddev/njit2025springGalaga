@@ -13,19 +13,19 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image('box', './assets/box.png');
-        this.load.image('bullet', './assets/PLAYERbullet.png');
-        this.load.image("enemy1", "./assets/BOSSfront.png");
-        this.load.image("enemy2", "./assets/WHITEfront.png");
-        this.load.image("enemy3", "./assets/YELLOWfront.png");
+        this.load.image('player', './assets/player.png');
+        this.load.image('bullet', './assets/bullet.png');
+        this.load.image("enemy1", "./assets/enemy1.png");
+        this.load.image("enemy2", "./assets/enemy2.png");
+        this.load.image("boss", "./assets/bossshermie.png");
         this.load.image("clone", "./assets/clone.png");
     }
 
     create() {
         this.bullets = new Bullets(this);
         this.enemies = new Enemies(this);
-        this.player = this.physics.add.image(sizes.width / 2, sizes.height - 50, 'box');
-        this.player.setScale(0.5);
+        this.player = this.physics.add.image(sizes.width / 2, sizes.height - 50, 'player');
+        this.player.setScale(1.5);
         this.player.setCollideWorldBounds(true);
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys({
@@ -36,20 +36,20 @@ export default class GameScene extends Phaser.Scene {
         let powerUp = new PowerUp(this, sizes.width / 2 + 100, sizes.height - 50);
 
         this.input.keyboard.on('keydown-SPACE', () => {
-            this.bullets.fireBullet(this.player.x, this.player.y - 50);
+            this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }
         });
         this.input.keyboard.on('keydown-W', () => {
             console.log(this.player.x, this.player.y);
-            this.bullets.fireBullet(this.player.x, this.player.y - 50);
+            this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }
         });
         this.input.keyboard.on('keydown-UP', () => {
-            this.bullets.fireBullet(this.player.x, this.player.y - 50);
+            this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }
