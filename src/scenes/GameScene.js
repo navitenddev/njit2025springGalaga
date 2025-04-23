@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import Phaser from 'phaser';
 import Bullets from '../objects/Bullets';
 import Enemies from '../objects/Enemies';
