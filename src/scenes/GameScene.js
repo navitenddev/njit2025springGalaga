@@ -21,9 +21,13 @@ export default class GameScene extends Phaser.Scene {
         this.load.image("enemy2", "./assets/bossgalaga.png");
         this.load.image("enemy3", "./assets/bossgalaga.png");
         this.load.image("clone", "./assets/clone.png");
+        //this.sound.decodeAudio('shoot', './assets/shoot.mp3');
+        this.load.audio('shoot', './assets/shoot.mp3');
+        
     }
 
     create() {
+        this.shootsound = this.sound.add('shoot');
         this.bullets = new Bullets(this);
         this.enemyBullets = new enemyBullets(this);
         this.enemies = new Enemies(this);
@@ -40,6 +44,7 @@ export default class GameScene extends Phaser.Scene {
 
         this.input.keyboard.on('keydown-SPACE', () => {
             this.bullets.fireBullet(this.player.x, this.player.y - 50);
+            this.shootsound.play();
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }
@@ -81,7 +86,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.clone) {
             this.clone.followPlayer(this.player);
         }
-        if (Phaser.Math.Between(1, 100) === 1) {
+        if (Phaser.Math.Between(1, 1000) === 1) {
             const activeEnemies = this.enemies.getChildren().filter(e => e.active);
             if (activeEnemies.length > 0) {
                 const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
