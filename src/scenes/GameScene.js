@@ -50,13 +50,14 @@ export default class GameScene extends Phaser.Scene {
             }
         });
         this.input.keyboard.on('keydown-W', () => {
-            console.log(this.player.x, this.player.y);
+            this.shootsound.play();
             this.bullets.fireBullet(this.player.x, this.player.y - 50);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
             }
         });
         this.input.keyboard.on('keydown-UP', () => {
+            this.shootsound.play();
             this.bullets.fireBullet(this.player.x, this.player.y - 50);
             if (this.clone) {
                 this.clone.shoot(this.bullets);
@@ -87,7 +88,7 @@ export default class GameScene extends Phaser.Scene {
             this.clone.followPlayer(this.player);
         }
         if (Phaser.Math.Between(1, 1000) === 1) {
-            const activeEnemies = this.enemies.getChildren().filter(e => e.active);
+            const activeEnemies = this.enemies.getChildren().filter(enemy => enemy.active);
             if (activeEnemies.length > 0) {
                 const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
                 shooter.shoot(this.enemyBullets);
