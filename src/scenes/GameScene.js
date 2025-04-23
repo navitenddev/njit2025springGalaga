@@ -3,6 +3,7 @@ import Bullets from '../objects/Bullets';
 import Enemies from '../objects/Enemies';
 import PauseScene from './PauseScene';
 import Clone from '../objects/Clone';
+import enemyBullets from "../objects/enemyBullet"
 import PowerUp from '../objects/PowerUp';
 import { sizes } from '../config';
 
@@ -23,6 +24,7 @@ export default class GameScene extends Phaser.Scene {
 
     create() {
         this.bullets = new Bullets(this);
+        this.enemyBullets = new enemyBullets(this);
         this.enemies = new Enemies(this);
         this.player = this.physics.add.image(sizes.width / 2, sizes.height - 50, 'player');
         this.player.setScale(1.5);
@@ -59,7 +61,9 @@ export default class GameScene extends Phaser.Scene {
             //this.scene.pause('GameScene');
         });
 
-        this.physics.add.overlap(this.bullets, this.enemies, this.bullethit, null, this);
+        this.physics.add.overlap(this.bullets, this.enemies, this.bulletHit, null, this);
+        this.physics.add.overlap(this.player, this.enemies, this.playerHit, null, this);
+        this.physics.add.overlap(this.player, this.enemyBullets, this.playerHit, null, this);
         this.physics.add.overlap(this.player, powerUp, () => {
             powerUp.collect(this.player, this.bullets);
             
@@ -76,9 +80,21 @@ export default class GameScene extends Phaser.Scene {
         if (this.clone) {
             this.clone.followPlayer(this.player);
         }
+        if (Phaser.Math.Between(1, 100) === 1) {
+            const activeEnemies = this.enemies.getChildren().filter(e => e.active);
+            if (activeEnemies.length > 0) {
+                const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
+                shooter.shoot(this.enemyBullets);
+            }
+        }
     }
-    bullethit(bullet, enemy) {
+    bulletHit(bullet, enemy) {
         bullet.hits();
         enemy.hits();
+    }
+    playerHit(player, enemy) {
+        enemy.destroy();
+        player.setVisible(false);
+        
     }
 }
