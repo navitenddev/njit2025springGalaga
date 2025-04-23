@@ -2,6 +2,7 @@ import Phaser from 'phaser';
 import GameScene from './scenes/GameScene';
 import PauseScene from './scenes/PauseScene';
 import TitleScene from './scenes/TitleScene';
+import GameOver from './scenes/GameOver';
 import { sizes } from './config';
 import './style.css';
 
@@ -16,7 +17,7 @@ const config = {
       debug: false
     }
   },
-  scene: [TitleScene, GameScene, PauseScene]
+  scene: [TitleScene, GameScene, PauseScene, GameOver]
 };
 
 const game = new Phaser.Game(config);
