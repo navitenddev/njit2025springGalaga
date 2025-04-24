@@ -85,7 +85,10 @@ export default class GameScene extends Phaser.Scene {
             const activeEnemies = this.enemies.getChildren().filter(e => e.active);
             if (activeEnemies.length > 0) {
                 const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
-                shooter.shoot(this.enemyBullets);
+                if(shooter.y > 100){
+                    shooter.shoot(this.enemyBullets);
+                }
+                
             }
         }
     }
