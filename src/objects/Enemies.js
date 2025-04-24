@@ -31,12 +31,32 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     // ADDED: startDive defines the diving path and function
     startDive() {
         this.isDiving = true;
+        var diveDuration;
         const divePath = new Phaser.Curves.Path(this.x, this.y);
-        divePath.splineTo([100, 550, 230, 450, 250, 400]);
-        divePath.circleTo(50, true, 0);
-        divePath.ellipseTo(90, 300, 300, 60, false);
+        const type = this.texture.key;
 
-        createTween(this.scene, this, divePath, 0, 5000, () => {
+        if (type == "enemy1") {
+            divePath.splineTo([
+                this.x - 100, sizes.height - 250,
+                this.x + 50, sizes.height - 200,
+                this.x + 100, sizes.height + 50
+            ]);
+            diveDuration = 2300;
+        } else if (type == "enemy2") {
+            divePath.splineTo([
+                this.x - 50, sizes.height - 400,
+            ]);
+            divePath.ellipseTo(200, 120, 324, 180, true, 240);
+            divePath.ellipseTo(80, 80, 360, 135, true, 60);
+            divePath.splineTo([this.x + 50, sizes.height + 50]);
+            diveDuration = 3500;
+        } else if (type == "boss") {
+            divePath.ellipseTo(90, 250, 270, 90, true, 0);
+            divePath.ellipseTo(120, 70, 60, 0, false, 190);
+            diveDuration = 3000;
+        }
+
+        createTween(this.scene, this, divePath, 0, diveDuration, () => {
             if (this.y > sizes.height) this.y = -50;
             this.enemyGroup.moveToFinalGridPosition(this);
             this.isDiving = false;
@@ -95,11 +115,29 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         });
 
         this.initiatePathMovement();
-        /*
-        this.scene.time.delayedCall(5500, () => {
-            this.getChildren()[0].startDive();
-        });*/
+
+        this.scene.time.delayedCall(20000, () => {
+            this.scheduleNextDive();
+        });
     }
+
+    scheduleNextDive() {
+        const delay = Phaser.Math.Between(1000, 4000); // Dive every 1-4 seconds
+        this.scene.time.delayedCall(delay, () => {
+            this.scheduleRandomDive();
+            this.scheduleNextDive(); // Schedule the next one recursively
+        });
+    }
+
+    scheduleRandomDive() {
+        const nonDivingEnemies = this.getChildren().filter(enemy => !enemy.isDiving && enemy.active);
+
+        if (nonDivingEnemies.length > 0) {
+            const randomEnemy = Phaser.Utils.Array.GetRandom(nonDivingEnemies);
+            randomEnemy.startDive();
+        }
+    }
+
 
     initiatePathMovement() {
         // ADDED: Graphics for visualizing paths
