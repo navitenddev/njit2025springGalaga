@@ -30,6 +30,7 @@ export default class GameScene extends Phaser.Scene {
         this.enemies = new Enemies(this);
         this.player = this.physics.add.sprite(sizes.width / 2, sizes.height - 50, 'player', 0);
         this.player.setScale(1.5);
+        this.difficulty = 1;
         this.player.setCollideWorldBounds(true);
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys({
@@ -81,11 +82,12 @@ export default class GameScene extends Phaser.Scene {
         if (this.clone) {
             this.clone.followPlayer(this.player);
         }
-        if (Phaser.Math.Between(1, 1000) === 1) {
+        if (Phaser.Math.Between(1, Phaser.Math.MinSub(150, this.difficulty * 15, 20)) === 1) {
+        //if (Phaser.Math.Between(1, 20) === 1) {
             const activeEnemies = this.enemies.getChildren().filter(e => e.active);
             if (activeEnemies.length > 0) {
                 const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
-                if(shooter.y > 100){
+                if(shooter.y < 300 && shooter.y > 10){
                     shooter.shoot(this.enemyBullets);
                 }
                 
@@ -97,7 +99,10 @@ export default class GameScene extends Phaser.Scene {
         bullet.hits();
         if(this.enemies.getChildren().filter(e => e.active).length == 0){
             console.log("restart");
-            this.scene.restart();
+            this.enemies.reset();
+            this.difficulty += 1;
+
+            //this.scene.restart();
         }
     }
     playerHit(player, enemy) {

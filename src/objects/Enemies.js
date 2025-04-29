@@ -73,6 +73,8 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         this.verticalGap = 30;
         this.timeElapsed = 0;
         this.isbreathing = false;   // CHANGED: Disabled breathing for testing
+        this.startdiving = false;   //variable to disable diving used when starting new stage
+        this.difficulty = 0;    //difficulty which controls the time between dives increments every round
 
         this.createEnemyGrid(); // Initialize enemy grid
 
@@ -83,6 +85,12 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
             callbackScope: this,
             loop: true,
         });
+    }
+    reset(){
+        this.timeElapsed = 0;
+        this.difficulty += 1; 
+        this.startdiving = false;
+        this.createEnemyGrid();
     }
 
     createEnemyGrid() {
@@ -116,14 +124,18 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
 
         this.initiatePathMovement();
 
-        this.scene.time.delayedCall(20000, () => {
+        this.scene.time.delayedCall(10000, () => {
+            this.startdiving = true;
             this.scheduleNextDive();
         });
     }
 
     scheduleNextDive() {
-        const delay = Phaser.Math.Between(1000, 4000); // Dive every 1-4 seconds
+        const delay = Phaser.Math.Between(1000, Phaser.Math.MinSub(15000, this.difficulty * 800, 1005)); //time between dives calculated by the difficulty
         this.scene.time.delayedCall(delay, () => {
+            if(!this.startdiving){
+                return;
+            }
             this.scheduleRandomDive();
             this.scheduleNextDive(); // Schedule the next one recursively
         });
