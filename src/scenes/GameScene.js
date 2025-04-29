@@ -81,7 +81,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.clone) {
             this.clone.followPlayer(this.player);
         }
-        if (Phaser.Math.Between(1, 100) === 1) {
+        if (Phaser.Math.Between(1, 1000) === 1) {
             const activeEnemies = this.enemies.getChildren().filter(e => e.active);
             if (activeEnemies.length > 0) {
                 const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
@@ -93,19 +93,27 @@ export default class GameScene extends Phaser.Scene {
         }
     }
     bulletHit(bullet, enemy) {
-        bullet.hits();
         enemy.hits();
+        bullet.hits();
+        if(this.enemies.getChildren().filter(e => e.active).length == 0){
+            console.log("restart");
+            this.scene.restart();
+        }
     }
     playerHit(player, enemy) {
         enemy.destroy();
         //player.setVisible(false);
         this.health++;
         if(this.health == 3){
-            this.scene.sleep();
-            //this.scene.pause();
-            this.scene.switch('GameOver');
+            //this.scene.sleep();
+            this.scene.pause();
+            this.scene.start('GameOver');
         }
         player.setFrame(this.health);
+        if(this.enemies.getChildren().filter(e => e.active).length == 0){
+            console.log("restart");
+            this.scene.restart();
+        }
         
         }
 }

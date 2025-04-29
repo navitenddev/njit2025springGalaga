@@ -8,7 +8,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     fire(x, y) {
         this.enableBody(true, x, y, true, true);
-        this.setVelocityY(-400);
+        this.setVelocityY(-500);
     }
 
     hits() {
