@@ -31,12 +31,20 @@ export default class GameScene extends Phaser.Scene {
         this.player = this.physics.add.sprite(sizes.width / 2, sizes.height - 50, 'player', 0);
         this.player.setScale(1.5);
         this.difficulty = 1;
+        this.score = 0;
+        this.scoretext = "score: " + this.score;
         this.player.setCollideWorldBounds(true);
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys({
             'left': Phaser.Input.Keyboard.KeyCodes.A,
             'right': Phaser.Input.Keyboard.KeyCodes.D,
         });
+
+        this.scoreboard = this.add.text(50, 680, this.scoretext, {
+            fontSize: "16px",
+            fill: "#ffffff",
+            fontFamily: "Andale Mono",
+        }).setOrigin(0.5, 0.5);
 
         //let powerUp = new PowerUp(this, sizes.width / 2 + 100, sizes.height - 50);
 
@@ -95,8 +103,14 @@ export default class GameScene extends Phaser.Scene {
         }
     }
     bulletHit(bullet, enemy) {
+        if(enemy.y < 2){
+            return;
+        }
         enemy.hits();
         bullet.hits();
+        this.score += 1;
+        this.scoretext = "score: " + this.score;
+        this.scoreboard.setText(this.scoretext);
         if(this.enemies.getChildren().filter(e => e.active).length == 0){
             console.log("restart");
             this.enemies.reset();

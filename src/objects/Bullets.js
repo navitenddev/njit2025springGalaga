@@ -8,7 +8,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
 
     fire(x, y) {
         this.enableBody(true, x, y, true, true);
-        this.setVelocityY(-700);
+        this.setVelocityY(-650);
     }
 
     hits() {
@@ -20,7 +20,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
     preUpdate(time, delta) {
         super.preUpdate(time, delta);
 
-        if (this.y <= -32) {
+        if (this.y <= -15) {
             this.setActive(false);
             this.setVisible(false);
         }
@@ -46,4 +46,5 @@ export default class BulletContainer extends Phaser.Physics.Arcade.Group {
             bullet.fire(x, y);
         }
     }
+
 }
