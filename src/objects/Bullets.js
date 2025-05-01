@@ -3,11 +3,12 @@ import Phaser from 'phaser';
 class Bullet extends Phaser.Physics.Arcade.Sprite {
     constructor(scene, x, y) {
         super(scene, x, y, 'bullet');
+        this.setScale(3)
     }
 
     fire(x, y) {
         this.enableBody(true, x, y, true, true);
-        this.setVelocityY(-400);
+        this.setVelocityY(-650);
     }
 
     hits() {
@@ -19,7 +20,7 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
     preUpdate(time, delta) {
         super.preUpdate(time, delta);
 
-        if (this.y <= -32) {
+        if (this.y <= -15) {
             this.setActive(false);
             this.setVisible(false);
         }
@@ -45,4 +46,5 @@ export default class BulletContainer extends Phaser.Physics.Arcade.Group {
             bullet.fire(x, y);
         }
     }
+
 }
