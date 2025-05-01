@@ -26,8 +26,9 @@ export default class GameOver extends Phaser.Scene {
             fontFamily: "Andale Mono",
         }).setOrigin(0.5, 0.5);
         this.input.keyboard.on('keydown-ENTER', () => {
-            this.scene.switch('GameScene');
-            this.scene.restart("GameScene");
+            this.scene.pause();
+            this.scene.start('GameScene');
+            //this.scene.restart("GameScene");
            // music.destroy();
         });
     }
