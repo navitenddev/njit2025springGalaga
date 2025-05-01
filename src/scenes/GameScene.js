@@ -26,6 +26,7 @@ export default class GameScene extends Phaser.Scene {
     create() {
         this.health = 0;
         this.bullets = new Bullets(this);
+        this.clonebullets = new Bullets(this);
         this.enemyBullets = new enemyBullets(this);
         this.enemies = new Enemies(this);
         this.player = this.physics.add.sprite(sizes.width / 2, sizes.height - 50, 'player', 0);
@@ -39,32 +40,32 @@ export default class GameScene extends Phaser.Scene {
             'left': Phaser.Input.Keyboard.KeyCodes.A,
             'right': Phaser.Input.Keyboard.KeyCodes.D,
         });
-
         this.scoreboard = this.add.text(50, 680, this.scoretext, {
             fontSize: "16px",
             fill: "#ffffff",
             fontFamily: "Andale Mono",
         }).setOrigin(0.5, 0.5);
+        
 
-        //let powerUp = new PowerUp(this, sizes.width / 2 + 100, sizes.height - 50);
+        let powerUp = new PowerUp(this, sizes.width / 2 + 100, sizes.height - 50);
 
         this.input.keyboard.on('keydown-SPACE', () => {
             this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
-                this.clone.shoot(this.bullets);
+                this.clone.shoot(this.clonebullets);
             }
         });
         this.input.keyboard.on('keydown-W', () => {
             console.log(this.player.x, this.player.y);
             this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
-                this.clone.shoot(this.bullets);
+                this.clone.shoot(this.clonebullets);
             }
         });
         this.input.keyboard.on('keydown-UP', () => {
             this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
-                this.clone.shoot(this.bullets);
+                this.clone.shoot(this.clonebullets);
             }
         });
         this.input.keyboard.on('keydown-P', () => {
@@ -75,9 +76,9 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.bullets, this.enemies, this.bulletHit, null, this);
         this.physics.add.overlap(this.player, this.enemies, this.playerHit, null, this);
         this.physics.add.overlap(this.player, this.enemyBullets, this.playerHit, null, this);
-        //this.physics.add.overlap(this.player, powerUp, () => {
-        //    powerUp.collect(this.player, this.bullets);  
-        //});
+        this.physics.add.overlap(this.player, powerUp, () => {
+            powerUp.collect(this.player, this.bullets);  
+        });
     }
     update() {
         this.player.setVelocity(0);
@@ -113,9 +114,17 @@ export default class GameScene extends Phaser.Scene {
         this.scoreboard.setText(this.scoretext);
         if(this.enemies.getChildren().filter(e => e.active).length == 0){
             console.log("restart");
-            this.enemies.reset();
             this.difficulty += 1;
-
+            this.leveltext = "level " + this.difficulty;
+            this.level = this.add.text(275, 350, this.leveltext, {
+                fontSize: "40px",
+                fill: "#ffffff",
+                fontFamily: "Andale Mono",
+            }).setOrigin(0.5, 0.5);
+            this.time.delayedCall(3000, () => {
+                this.level.destroy();
+                this.enemies.reset();
+            });
             //this.scene.restart();
         }
     }
