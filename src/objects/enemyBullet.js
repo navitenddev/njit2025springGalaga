@@ -10,7 +10,7 @@ class enemyBullet extends Phaser.Physics.Arcade.Sprite {
     }
 
     hits() {
-        this.disableBody(true, true);
+        //this.disableBody();
         this.setActive(false);
         this.setVisible(false);
     }
@@ -18,7 +18,7 @@ class enemyBullet extends Phaser.Physics.Arcade.Sprite {
     preUpdate(time, delta) {
         super.preUpdate(time, delta);
 
-        if (this.y <= -32) {
+        if (this.y >= 732) {
             this.setActive(false);
             this.setVisible(false);
         }
@@ -30,7 +30,7 @@ export default class BulletContainer extends Phaser.Physics.Arcade.Group {
         super(scene.physics.world, scene);
 
         this.createMultiple({
-            frameQuantity: 20,
+            frameQuantity: 10,
             key: 'enemyBullet',
             active: false,
             visible: false,
@@ -41,6 +41,7 @@ export default class BulletContainer extends Phaser.Physics.Arcade.Group {
     fireBullet(x, y) {
         let bullet = this.getFirstDead();
         if (bullet) {
+
             bullet.fire(x, y);
         }
     }

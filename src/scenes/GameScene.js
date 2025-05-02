@@ -3,6 +3,7 @@ import Bullets from '../objects/Bullets';
 import Enemies from '../objects/Enemies';
 import PauseScene from './PauseScene';
 import Clone from '../objects/Clone';
+import enemyBullets from "../objects/enemyBullet"
 import PowerUp from '../objects/PowerUp';
 import { sizes } from '../config';
 
@@ -29,12 +30,21 @@ export default class GameScene extends Phaser.Scene {
         this.enemies = new Enemies(this);
         this.player = this.physics.add.sprite(sizes.width / 2, sizes.height - 50, 'player', 0);
         this.player.setScale(1.5);
+        this.difficulty = 1;
+        this.score = 0;
+        this.scoretext = "score: " + this.score;
         this.player.setCollideWorldBounds(true);
         this.cursors = this.input.keyboard.createCursorKeys();
         this.keys = this.input.keyboard.addKeys({
             'left': Phaser.Input.Keyboard.KeyCodes.A,
             'right': Phaser.Input.Keyboard.KeyCodes.D,
         });
+
+        this.scoreboard = this.add.text(50, 680, this.scoretext, {
+            fontSize: "16px",
+            fill: "#ffffff",
+            fontFamily: "Andale Mono",
+        }).setOrigin(0.5, 0.5);
 
         //let powerUp = new PowerUp(this, sizes.width / 2 + 100, sizes.height - 50);
 
@@ -57,9 +67,10 @@ export default class GameScene extends Phaser.Scene {
                 this.clone.shoot(this.bullets);
             }
         });
+
         this.input.keyboard.on('keydown-P', () => {
-            this.scene.switch('PauseScene');
-            //this.scene.pause('GameScene');
+            this.scene.launch('PauseScene');
+            this.scene.pause();
         });
 
         this.physics.add.overlap(this.bullets, this.enemies, this.bulletHit, null, this);
@@ -80,28 +91,49 @@ export default class GameScene extends Phaser.Scene {
         if (this.clone) {
             this.clone.followPlayer(this.player);
         }
-        if (Phaser.Math.Between(1, 100) === 1) {
+        if (Phaser.Math.Between(1, Phaser.Math.MinSub(150, this.difficulty * 15, 20)) === 1) {
+        //if (Phaser.Math.Between(1, 20) === 1) {
             const activeEnemies = this.enemies.getChildren().filter(e => e.active);
             if (activeEnemies.length > 0) {
                 const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
-                shooter.shoot(this.enemyBullets);
+                if(shooter.y < 300 && shooter.y > 10){
+                    shooter.shoot(this.enemyBullets);
+                }
+                
             }
         }
     }
     bulletHit(bullet, enemy) {
-        bullet.hits();
+        if(enemy.y < 2){
+            return;
+        }
         enemy.hits();
+        bullet.hits();
+        this.score += 1;
+        this.scoretext = "score: " + this.score;
+        this.scoreboard.setText(this.scoretext);
+        if(this.enemies.getChildren().filter(e => e.active).length == 0){
+            console.log("restart");
+            this.enemies.reset();
+            this.difficulty += 1;
+
+            //this.scene.restart();
+        }
     }
     playerHit(player, enemy) {
         enemy.destroy();
         //player.setVisible(false);
         this.health++;
         if(this.health == 3){
-            this.scene.sleep();
-            //this.scene.pause();
-            this.scene.switch('GameOver');
+            //this.scene.sleep();
+            this.scene.pause();
+            this.scene.start('GameOver');
         }
         player.setFrame(this.health);
+        if(this.enemies.getChildren().filter(e => e.active).length == 0){
+            console.log("restart");
+            this.scene.restart();
+        }
         
         }
 }

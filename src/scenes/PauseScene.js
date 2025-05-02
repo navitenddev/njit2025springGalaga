@@ -11,15 +11,21 @@ export default class PauseScene extends Phaser.Scene {
     }
 
     create() {
-        background = this.add.image(this.scale.width / 2, this.scale.height / 2, "background").setDisplaySize(this.scale.width, this.scale.height);
-        this.add.text(this.scale.width / 2, this.scale.height / 2 - 100, "Press Space To Resume", {
+        const background = this.add.image(this.scale.width / 2, this.scale.height / 2, "background")
+            .setDisplaySize(this.scale.width, this.scale.height);
+        
+        this.add.text(this.scale.width / 2, this.scale.height / 2 - 100, "Press Enter To Resume", {
             fontSize: "38px",
             fill: "#ffffff",
             fontFamily: "Andale Mono",
-        }).setOrigin(0.5, 0.5);
-        this.input.keyboard.on('keydown-ENTER', () => {
-            this.scene.switch('GameScene');
-            //this.scene.sleep('PauseScene');
+        }).setOrigin(0.5);
+
+        this.input.keyboard.once('keydown-ENTER', () => {
+            this.scene.resume('GameScene');
+            this.scene.stop(); // stop PauseScene
         });
     }
 }
+
+
+
