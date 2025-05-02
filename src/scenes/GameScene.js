@@ -21,6 +21,7 @@ export default class GameScene extends Phaser.Scene {
         this.load.image("boss", "./assets/bossshermie.png");
         this.load.image("clone", "./assets/clone.png");
         this.load.image("enemyBullet", "./assets/enemyBullet.png");
+        this.load.audio("shootsound", "./assets/shoot.mp3");
     }
 
     create() {
@@ -51,18 +52,21 @@ export default class GameScene extends Phaser.Scene {
 
         this.input.keyboard.on('keydown-SPACE', () => {
             this.bullets.fireBullet(this.player.x, this.player.y - 20);
+            this.sound.play('shootsound');
             if (this.clone) {
                 this.clone.shoot(this.clonebullets);
             }
         });
         this.input.keyboard.on('keydown-W', () => {
             console.log(this.player.x, this.player.y);
+            this.sound.play('shootsound');
             this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.clonebullets);
             }
         });
         this.input.keyboard.on('keydown-UP', () => {
+            this.sound.play('shootsound');
             this.bullets.fireBullet(this.player.x, this.player.y - 20);
             if (this.clone) {
                 this.clone.shoot(this.clonebullets);
@@ -121,7 +125,7 @@ export default class GameScene extends Phaser.Scene {
                 fill: "#ffffff",
                 fontFamily: "Andale Mono",
             }).setOrigin(0.5, 0.5);
-            this.time.delayedCall(3000, () => {
+            this.time.delayedCall(3000, () => {     
                 this.level.destroy();
                 this.enemies.reset();
             });
