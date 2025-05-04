@@ -22,6 +22,10 @@ export default class GameScene extends Phaser.Scene {
 
     preload() {
         this.load.spritesheet('player', './assets/spritesheet.png',  { frameWidth: 23, frameHeight: 28 });
+        if (!this.sound.get('gameMusic')) {
+            this.load.audio('gameMusic', 'assets/gameMusic.wav');
+        }
+        this.load.image('starfield', './assets/starfield.png');
         this.load.image('bullet', './assets/bullet.png');
         this.load.image("enemy1", "./assets/enemy1.png");
         this.load.image("enemy2", "./assets/enemy2.png");
@@ -65,9 +69,26 @@ export default class GameScene extends Phaser.Scene {
             this.initGame();
             this.gameStarted = true;
         });
+
+        const menuMusic = this.sound.get('menuMusic');
+        if (menuMusic && menuMusic.isPlaying) {
+            menuMusic.stop();
+            this.registry.set('isMenuMusicPlaying', false);
+        }
+
+        let gameMusic = this.sound.get('gameMusic');
+        if (!gameMusic) {
+            gameMusic = this.sound.add('gameMusic', { loop: true, volume: 0.5 });
+            gameMusic.play();
+            this.registry.set('isGameMusicPlaying', true);
+        } else if (!gameMusic.isPlaying) {
+            gameMusic.play();
+            this.registry.set('isGameMusicPlaying', true);
+        }
     }
 
     initGame() {
+        this.starfield = this.add.tileSprite(0, 0, sizes.width, sizes.height, 'starfield').setOrigin(0, 0);
         this.health = 0;
         this.bullets = new Bullets(this);
         this.clonebullets = new Bullets(this);
@@ -180,6 +201,7 @@ export default class GameScene extends Phaser.Scene {
     }
     update() {
         if (!this.gameStarted) return;
+        this.starfield.tilePositionY -= 0.5;
         this.player.setVelocity(0);
         if (this.cursors.left.isDown || this.keys.left.isDown) {
             this.player.setVelocityX(-300);
