@@ -5,7 +5,30 @@ class CreditsScene extends Phaser.Scene {
     super({ key: 'CreditsScene' });
   }
 
+  preload() {
+    if (!this.sound.get('menuMusic')) {
+      this.load.audio('menuMusic', 'assets/menuMusic.wav');
+    }
+  }
+  
+
   create() {
+
+    const gameMusic = this.sound.get('gameMusic');
+    if (gameMusic && gameMusic.isPlaying) {
+        gameMusic.stop();              
+        this.registry.set('isGameMusicPlaying', false);
+    }
+    
+    let menuMusic = this.sound.get('menuMusic');
+    if (!menuMusic) {
+        menuMusic = this.sound.add('menuMusic', { loop: true, volume: 0.5 });
+        menuMusic.play();
+        this.registry.set('isMenuMusicPlaying', true);
+    } else if (!menuMusic.isPlaying) {
+        menuMusic.play();
+        this.registry.set('isMenuMusicPlaying', true);
+    }
 
     const creditsText = [
       'Created by',
