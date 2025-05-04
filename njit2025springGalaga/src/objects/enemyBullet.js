@@ -39,6 +39,7 @@ export default class BulletContainer extends Phaser.Physics.Arcade.Group {
     }
 
     fireBullet(x, y) {
+        this.scene.sound.play('attack');
         let bullet = this.getFirstDead();
         if (bullet) {
 

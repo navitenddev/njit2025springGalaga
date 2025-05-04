@@ -17,6 +17,7 @@ export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });
         this.clone = null;
+        this.gameStarted = false;
     }
 
     preload() {
@@ -28,6 +29,14 @@ export default class GameScene extends Phaser.Scene {
         this.load.image("clone", "./assets/clone.png");
         this.load.image("enemyBullet", "./assets/enemyBullet.png");
         this.load.audio("shootsound", "./assets/shoot.mp3");
+        this.load.audio("dropdown", "./assets/dropdown.mp3");
+        this.load.audio("glide", "./assets/glide.wav");
+        this.load.audio("newWave", "./assets/newWave.mp3");
+        this.load.audio("attack", "./assets/attack.wav");
+        this.load.audio("enemyDeath", "./assets/enemyDeath.mp3");
+        this.load.audio("powerUpCollect", "./assets/powerUpCollect.mp3");
+        this.load.audio("hurt", "./assets/damage.mp3");
+        this.load.audio("gameOver", "./assets/retroExplode.mp3");
         this.load.image('clonePowerUp', './assets/player.png');
         this.load.image('shieldPowerUp', './assets/shield.png');
         this.load.image('tripleshotPowerUp', './assets/tripleshot.png');
@@ -36,9 +45,29 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('box', './assets/box.png');
         this.load.spritesheet('enemyExplode', './assets/FireWorks.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('playerExplode', './assets/PlayerExplosion.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.spritesheet('thumbsup', './assets/thumbsUp.png', { frameWidth: 32, frameHeight: 32 });
+        this.load.font('mago', 'assets/fonts/mago1.ttf', 'truetype');
     }
 
     create() {
+        this.gameStarted = false;
+        this.anims.create({
+            key: 'intro',
+            frames: this.anims.generateFrameNumbers('thumbsup'),
+            frameRate: 6,
+            hideOnComplete: true
+        });
+        const intro = this.add.sprite(sizes.width/2, sizes.height - 50, 'thumbsup');
+        intro.setScale(1.50);
+        intro.play('intro');
+        intro.once('animationcomplete', () => {
+            intro.destroy();
+            this.initGame();
+            this.gameStarted = true;
+        });
+    }
+
+    initGame() {
         this.health = 0;
         this.bullets = new Bullets(this);
         this.clonebullets = new Bullets(this);
@@ -56,10 +85,10 @@ export default class GameScene extends Phaser.Scene {
             'left': Phaser.Input.Keyboard.KeyCodes.A,
             'right': Phaser.Input.Keyboard.KeyCodes.D,
         });
-        this.scoreboard = this.add.text(50, 680, this.scoretext, {
-            fontSize: "16px",
+        this.scoreboard = this.add.text(260, 10, this.scoretext, {
+            fontSize: "30px",
             fill: "#ffffff",
-            fontFamily: "Andale Mono",
+            fontFamily: "mago",
         }).setOrigin(0.5, 0.5);
         
         this.cloneGroup = this.physics.add.group({
@@ -150,6 +179,7 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.clonebullets, this.enemies, this.bulletHit, null, this);
     }
     update() {
+        if (!this.gameStarted) return;
         this.player.setVelocity(0);
         if (this.cursors.left.isDown || this.keys.left.isDown) {
             this.player.setVelocityX(-300);
@@ -177,7 +207,7 @@ export default class GameScene extends Phaser.Scene {
         }
         enemy.hits();
         bullet.hits();
-        this.score += 1;
+        this.score += 100;
         this.scoretext = "score: " + this.score;
         this.scoreboard.setText(this.scoretext);
         const alive = this.enemies.getChildren().some(e => e.active);
@@ -215,13 +245,14 @@ export default class GameScene extends Phaser.Scene {
     }
     
     nextLevel() {
+        this.sound.play('newWave');
         console.log("restart");
         this.difficulty += 1;
         this.leveltext = "level " + this.difficulty;
         this.level = this.add.text(275, 350, this.leveltext, {
-            fontSize: "40px",
+            fontSize: "70px",
             fill: "#ffffff",
-            fontFamily: "Andale Mono",
+            fontFamily: "mago",
         }).setOrigin(0.5, 0.5);
         this.time.delayedCall(3000, () => {     
             this.level.destroy();
@@ -236,6 +267,7 @@ export default class GameScene extends Phaser.Scene {
 
     playerHit(player, enemy) {
         enemy.destroy();
+        this.sound.play('hurt');
         if (player.isShield) {
             if (this.activeShield)
                 this.activeShield.deactivateShield(player);
@@ -249,6 +281,7 @@ export default class GameScene extends Phaser.Scene {
         player.setFrame(this.health);
         if(this.health == 3){
             this.player.play('death');
+            this.sound.play('gameOver');
             //this.scene.sleep();
             this.player.once('animationcomplete', () => {
                 this.scene.pause();

@@ -8,6 +8,7 @@ export default class TitleScene extends Phaser.Scene {
   preload() {
     this.load.image('background', 'assets/spaceTestImage.jpg');
     this.load.font('mago', 'assets/fonts/mago1.ttf', 'truetype');
+    this.load.audio("select", "./assets/select.mp3");
   }
 
   create() {
@@ -34,12 +35,14 @@ export default class TitleScene extends Phaser.Scene {
     this.selectButton(this.selectedButtonIndex);
 
     this.input.keyboard.on('keydown-UP', () => {
+      this.sound.play('select');
       this.selectedButtonIndex =
         (this.selectedButtonIndex - 1 + this.buttons.length) % this.buttons.length;
       this.selectButton(this.selectedButtonIndex);
     });
 
     this.input.keyboard.on('keydown-DOWN', () => {
+      this.sound.play('select');
       this.selectedButtonIndex =
         (this.selectedButtonIndex + 1) % this.buttons.length;
       this.selectButton(this.selectedButtonIndex);

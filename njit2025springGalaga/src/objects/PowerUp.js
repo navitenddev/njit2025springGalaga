@@ -17,6 +17,7 @@ export default class PowerUp extends Phaser.Physics.Arcade.Sprite {
     }
   
     collect(player) {
+      this.scene.sound.play('powerUpCollect');
       const sc = player.scene;
 
       this.timerEvent = sc.time.addEvent({
