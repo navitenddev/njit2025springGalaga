@@ -26,26 +26,14 @@ class Enemy extends Phaser.Physics.Arcade.Sprite {
     }
 
     hits() {
-        if (this.explode) return;
-        this.explode = true;
-        this.setActive(false);
-        this.setVisible(false);
-
-        const death = this.scene.add.sprite(this.x, this.y, 'enemyExplode');
-        this.scene.sound.play('enemyDeath');
-        death.play('explode').on('animationcomplete', () => {
-            death.destroy();
-        });
         this.destroy();
     }
-    
     // ADDED: startDive defines the diving path and function
     startDive() {
         this.isDiving = true;
         var diveDuration;
         const divePath = new Phaser.Curves.Path(this.x, this.y);
         const type = this.texture.key;
-        this.scene.sound.play('dropdown');
 
         if (type == "enemy1") {
             divePath.splineTo([
@@ -164,7 +152,6 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
 
 
     initiatePathMovement() {
-        this.scene.sound.play('glide');
         // ADDED: Graphics for visualizing paths
         const graphics = this.scene.add.graphics();
         graphics.lineStyle(2, 0xff0000, 1);
@@ -173,6 +160,7 @@ export default class EnemyGroup extends Phaser.Physics.Arcade.Group {
         groupAleftEntry.splineTo([50, 350]);
         groupAleftEntry.ellipseTo(100, 140, 200, 0, true, 0);
         // groupAleftEntry.draw(graphics);
+
         const groupArightEntry = new Phaser.Curves.Path(2 * 550 / 3, -50);
         groupArightEntry.splineTo([500, 350]);
         groupArightEntry.ellipseTo(100, 140, 160, 0, false, 180);

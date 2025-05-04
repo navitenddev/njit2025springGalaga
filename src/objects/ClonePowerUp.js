@@ -8,19 +8,12 @@ class ClonePowerUp extends PowerUp {
     }
 
     collect(player, bullets) {
-        if (player.scene.clone) {
-            this.destroy();
-            return;
-          }
         super.collect(player);
         this.updateProgressBar(player.scene);
         const clone = new Clone(player.scene, player.x - 100, player.y);
         player.scene.add.existing(clone);
         player.scene.physics.add.existing(clone);
         player.scene.clone = clone;
-
-        player.scene.physics.add.overlap(clone, player.scene.enemies, () => this.removeClone(player), null, this);
-        player.scene.physics.add.overlap(clone, player.scene.enemyBullets, () => this.removeClone(player), null, this);
 
         this.timerEvent = player.scene.time.addEvent({
             delay: this.duration,
@@ -46,25 +39,17 @@ class ClonePowerUp extends PowerUp {
         }
 
         if (this.progressUpdateEvent) {
-            this.progressUpdateEvent.remove(false);
-            this.progressUpdateEvent = null;
+            this.progressUpdateEvent.remove();
         }
-        if (this.timerEvent) {
-            this.timerEvent.remove(false);
-            this.timerEvent = null;
-        }   
-
-        if (this.progressGraphics) {
-            this.progressGraphics.clear();
-            this.progressGraphics.destroy();
-            this.progressGraphics = null;
-        }   
+        this.progressGraphics.clear();
     }
 
     updateProgressBar(scene) {
-        if (!this.timerEvent || !this.progressGraphics) return;
+        if (!this.timerEvent) return;
         const progress = this.timerEvent.getProgress();
-        this.progressGraphics.clear().fillStyle(0xff0000, 1).fillRect(25, 645, 500 * progress, 8);
+        this.progressGraphics.clear();
+        this.progressGraphics.fillStyle(0xff0000, 1);
+        this.progressGraphics.fillRect(25, 645, 500 * progress, 8);
         if (progress >= 0.99) {
             this.removeClone(scene.player);
         }

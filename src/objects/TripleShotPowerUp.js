@@ -1,8 +1,9 @@
+// src/objects/TripleShotPowerUp.js
 import PowerUp from './PowerUp';
 
 export default class TripleShotPowerUp extends PowerUp {
   constructor(scene, x, y) {
-    super(scene, x, y, 'tripleshotPowerUp', 5000);
+    super(scene, x, y, 'triple', 5000);
     this.setScale(0.5);
     this.setCollideWorldBounds(true);
   }

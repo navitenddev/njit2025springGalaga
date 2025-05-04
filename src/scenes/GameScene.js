@@ -10,14 +10,11 @@ import TripleShotPowerUp from '../objects/TripleShotPowerUp';
 import PowerUp from '../objects/PowerUp';
 import BulletContainer from '../objects/Bullets';
 import { sizes } from '../config';
-import infiniteShotPowerUp from '../objects/InfiniteBulletPowerUp';
-import HealthPowerUp from '../objects/healthPowerUp';
 
 export default class GameScene extends Phaser.Scene {
     constructor() {
         super({ key: "GameScene" });
         this.clone = null;
-        this.gameStarted = false;
     }
 
     preload() {
@@ -29,45 +26,12 @@ export default class GameScene extends Phaser.Scene {
         this.load.image("clone", "./assets/clone.png");
         this.load.image("enemyBullet", "./assets/enemyBullet.png");
         this.load.audio("shootsound", "./assets/shoot.mp3");
-        this.load.audio("dropdown", "./assets/dropdown.mp3");
-        this.load.audio("glide", "./assets/glide.wav");
-        this.load.audio("newWave", "./assets/newWave.mp3");
-        this.load.audio("attack", "./assets/attack.wav");
-        this.load.audio("enemyDeath", "./assets/enemyDeath.mp3");
-        this.load.audio("powerUpCollect", "./assets/powerUpCollect.mp3");
-        this.load.audio("hurt", "./assets/damage.mp3");
-        this.load.audio("gameOver", "./assets/retroExplode.mp3");
         this.load.image('clonePowerUp', './assets/player.png');
-        this.load.image('shieldPowerUp', './assets/shield.png');
-        this.load.image('tripleshotPowerUp', './assets/tripleshot.png');
-        this.load.image('infiniteshotPowerup', './assets/infiniteshot.png');
-        this.load.image('healthPowerup', './assets/health.png');
+        this.load.image('shieldPowerUp', './assets/player.png');
         this.load.image('box', './assets/box.png');
-        this.load.spritesheet('enemyExplode', './assets/FireWorks.png', { frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('playerExplode', './assets/PlayerExplosion.png', { frameWidth: 32, frameHeight: 32 });
-        this.load.spritesheet('thumbsup', './assets/thumbsUp.png', { frameWidth: 32, frameHeight: 32 });
-        this.load.font('mago', 'assets/fonts/mago1.ttf', 'truetype');
     }
 
     create() {
-        this.gameStarted = false;
-        this.anims.create({
-            key: 'intro',
-            frames: this.anims.generateFrameNumbers('thumbsup'),
-            frameRate: 6,
-            hideOnComplete: true
-        });
-        const intro = this.add.sprite(sizes.width/2, sizes.height - 50, 'thumbsup');
-        intro.setScale(1.50);
-        intro.play('intro');
-        intro.once('animationcomplete', () => {
-            intro.destroy();
-            this.initGame();
-            this.gameStarted = true;
-        });
-    }
-
-    initGame() {
         this.health = 0;
         this.bullets = new Bullets(this);
         this.clonebullets = new Bullets(this);
@@ -85,59 +49,31 @@ export default class GameScene extends Phaser.Scene {
             'left': Phaser.Input.Keyboard.KeyCodes.A,
             'right': Phaser.Input.Keyboard.KeyCodes.D,
         });
-        this.scoreboard = this.add.text(260, 10, this.scoretext, {
-            fontSize: "30px",
+        this.scoreboard = this.add.text(50, 680, this.scoretext, {
+            fontSize: "16px",
             fill: "#ffffff",
-            fontFamily: "mago",
+            fontFamily: "Andale Mono",
         }).setOrigin(0.5, 0.5);
         
         this.cloneGroup = this.physics.add.group({
             classType: ClonePowerUp,
             runChildUpdate: true,
-            //maxSize: 1,
+            maxSize: 10,
           });
         this.shieldGroup = this.physics.add.group({
             classType: ShieldPowerUp,
             runChildUpdate: true,
-            //maxSize: 10,
+            maxSize: 10,
           });
         this.tripleGroup = this.physics.add.group({
             classType: TripleShotPowerUp,
             runChildUpdate: true,
-            //maxSize: 10,
+            maxSize: 10,
           });
-        this.infiniteGroup = this.physics.add.group({
-            classType: infiniteShotPowerUp,
-            runChildUpdate: true,
-            //maxSize: 10,
-          });
-
-        this.healthGroup = this.physics.add.group({
-            classType: HealthPowerUp,
-            runChildUpdate: true,
-            //maxSize: 10,
-          });
-          
-        this.anims.create({
-            key: 'explode',
-            frames: this.anims.generateFrameNumbers('enemyExplode'),
-            frameRate: 8,
-            hideOnComplete: true
-        });
-      
-        this.anims.create({
-            key: 'death',
-            frames: this.anims.generateFrameNumbers('playerExplode'),
-            frameRate: 6,
-            hideOnComplete: true
-        });
-
         this.activePowerUps = this.physics.add.group();
         this.physics.add.overlap(this.player, this.cloneGroup, (player, pu) => pu.collect(player), null, this);
         this.physics.add.overlap(this.player, this.shieldGroup, (player, pu) => pu.collect(player), null, this);
         this.physics.add.overlap(this.player, this.tripleGroup, (player, pu) => pu.collect(player), null, this);
-        this.physics.add.overlap(this.player, this.infiniteGroup, (player, pu) => pu.collect(player), null, this);
-        this.physics.add.overlap(this.player, this.healthGroup, (player, pu) => pu.collect(player), null, this);
         this.input.keyboard.on('keydown-SPACE', () => {
             if (this.player.tripleShot) {
                 this.bullets.fireBullet(this.player.x - 20, this.player.y - 20);
@@ -179,7 +115,6 @@ export default class GameScene extends Phaser.Scene {
         this.physics.add.overlap(this.clonebullets, this.enemies, this.bulletHit, null, this);
     }
     update() {
-        if (!this.gameStarted) return;
         this.player.setVelocity(0);
         if (this.cursors.left.isDown || this.keys.left.isDown) {
             this.player.setVelocityX(-300);
@@ -207,52 +142,41 @@ export default class GameScene extends Phaser.Scene {
         }
         enemy.hits();
         bullet.hits();
-        this.score += 100;
+        this.score += 1;
         this.scoretext = "score: " + this.score;
         this.scoreboard.setText(this.scoretext);
-        const alive = this.enemies.getChildren().some(e => e.active);
-        if (!alive) {
-            this.nextLevel();
-        }
-        if (Phaser.Math.Between(1, 100) <= 12) {
+        if (Phaser.Math.Between(1, 100) <= 5) {
             const randomPU = Math.random();
-            if (randomPU < 0.2 && !this.clone) {
+            if (randomPU < 0.33) {
                 //Clone
                 const pu = this.cloneGroup.create(enemy.x, enemy.y, 'clonePowerUp');
                 pu.setVelocityY(150).setScale(1);
             }
-            else if (randomPU < 0.4) {
+            else if (randomPU < 0.66) {
                 //Triple Shot
                 const pu = this.tripleGroup.create(enemy.x, enemy.y, 'box');
-                pu.setVelocityY(150).setScale(2.3);
-            }
-            else if (randomPU < 0.6) {
-                //Infinite Shot
-                const pu = this.infiniteGroup.create(enemy.x, enemy.y, 'box');
-                pu.setVelocityY(150).setScale(2.3);
-            }
-            else if (randomPU < 0.8) {
-                //Health 
-                const pu = this.healthGroup.create(enemy.x, enemy.y, 'health');
-                pu.setVelocityY(150).setScale(2.5);
+                pu.setVelocityY(150).setScale(0.5);
             }
             else {
                 //Shield
-                const pu = this.shieldGroup.create(enemy.x, enemy.y, 'shieldPowerUp');
-                pu.setVelocityY(150).setScale(3.2);
+                const pu = this.shieldGroup.create(enemy.x, enemy.y, 'box2');
+                pu.setVelocityY(150).setScale(0.3);
             }
         }
+            const alive = this.enemies.getChildren().some(e => e.active);
+            if (!alive) {
+                this.nextLevel();
+            }
     }
     
     nextLevel() {
-        this.sound.play('newWave');
         console.log("restart");
         this.difficulty += 1;
         this.leveltext = "level " + this.difficulty;
         this.level = this.add.text(275, 350, this.leveltext, {
-            fontSize: "70px",
+            fontSize: "40px",
             fill: "#ffffff",
-            fontFamily: "mago",
+            fontFamily: "Andale Mono",
         }).setOrigin(0.5, 0.5);
         this.time.delayedCall(3000, () => {     
             this.level.destroy();
@@ -260,14 +184,8 @@ export default class GameScene extends Phaser.Scene {
         });
         //this.scene.restart();}
     }
-    onCloneHit(cloneSprite, _enemyOrBullet) {
-        clone.destroy();
-        this.clone = null;
-    }
-
     playerHit(player, enemy) {
         enemy.destroy();
-        this.sound.play('hurt');
         if (player.isShield) {
             if (this.activeShield)
                 this.activeShield.deactivateShield(player);
@@ -280,13 +198,9 @@ export default class GameScene extends Phaser.Scene {
         this.health++;
         player.setFrame(this.health);
         if(this.health == 3){
-            this.player.play('death');
-            this.sound.play('gameOver');
             //this.scene.sleep();
-            this.player.once('animationcomplete', () => {
-                this.scene.pause();
-                this.scene.start('GameOver');
-            });
+            this.scene.pause();
+            this.scene.start('GameOver');
         }
         player.setFrame(this.health);
         if(this.enemies.getChildren().filter(e => e.active).length == 0){

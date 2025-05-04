@@ -5,8 +5,6 @@ export default class PowerUp extends Phaser.Physics.Arcade.Sprite {
       //this.duration = duration;
       scene.add.existing(this);
       scene.physics.add.existing(this);
-      this.body.setSize(this.width * 0.6, this.height * 0.6);
-      this.body.setOffset((this.width - this.width * 0.6) / 2, (this.height - this.height * 0.6) / 2);
       this.setScale(1);
       this.setVelocityY(150);
       this.setCollideWorldBounds(true);
@@ -17,7 +15,6 @@ export default class PowerUp extends Phaser.Physics.Arcade.Sprite {
     }
   
     collect(player) {
-      this.scene.sound.play('powerUpCollect');
       const sc = player.scene;
 
       this.timerEvent = sc.time.addEvent({
