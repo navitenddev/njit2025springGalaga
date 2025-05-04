@@ -8,14 +8,17 @@ export default class TitleScene extends Phaser.Scene {
   preload() {
     this.load.image('background', 'assets/spaceTestImage.jpg');
     this.load.font('mago', 'assets/fonts/mago1.ttf', 'truetype');
+    if (!this.sound.get('menuMusic')) {
+      this.load.audio('menuMusic', 'assets/menuMusic.wav');
+    }
   }
 
   create() {
     this.add
       .image(this.scale.width / 2, this.scale.height / 2, 'background')
       .setDisplaySize(this.scale.width, this.scale.height);
-
-    this.add
+    
+      this.add
       .text(this.scale.width / 2, this.scale.height / 2 - 150, 'Shermie Galaga', {
         fontSize: '75px',
         fill: '#ffffff',
@@ -48,6 +51,22 @@ export default class TitleScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-SPACE', () => {
       this.buttons[this.selectedButtonIndex].emit('pointerdown');
     });
+
+    const gameMusic = this.sound.get('gameMusic');
+      if (gameMusic && gameMusic.isPlaying) {
+          gameMusic.stop();              
+          this.registry.set('isGameMusicPlaying', false);
+      }
+      
+      let menuMusic = this.sound.get('menuMusic');
+      if (!menuMusic) {
+          menuMusic = this.sound.add('menuMusic', { loop: true, volume: 0.5 });
+          menuMusic.play();
+          this.registry.set('isMenuMusicPlaying', true);
+      } else if (!menuMusic.isPlaying) {
+          menuMusic.play();
+          this.registry.set('isMenuMusicPlaying', true);
+      }
   }
 
   createButton(x, y, label) {

@@ -9,11 +9,14 @@ export default class PauseScene extends Phaser.Scene {
 
     preload() {
         this.load.image('background', './assets/spaceTestImage.jpg');
+        this.load.font('mago', 'assets/fonts/mago1.ttf', 'truetype');
+        if (!this.sound.get('menuMusic')) {
+            this.load.audio('menuMusic', 'assets/menuMusic.wav');
+        }
     }
 
     create() {
-        this.background = this.add.image(this.scale.width / 2, this.scale.height / 2, "background")
-            .setDisplaySize(this.scale.width, this.scale.height);
+        this.background = this.add.image(this.scale.width / 2, this.scale.height / 2, "background").setDisplaySize(this.scale.width, this.scale.height);
 
         const menuOptions = ["Resume", "Restart", "Quit to Title"];
         const startY = this.scale.height / 2 - 40;
@@ -22,7 +25,7 @@ export default class PauseScene extends Phaser.Scene {
             return this.add.text(this.scale.width / 2, startY + index * 50, text, {
                 fontSize: "32px",
                 fill: index === 0 ? "#ffff00" : "#ffffff", // highlight first item
-                fontFamily: "Andale Mono",
+                fontFamily: "mago",
             }).setOrigin(0.5);
         });
 
@@ -34,12 +37,11 @@ export default class PauseScene extends Phaser.Scene {
             this.updateSelection(1);
         });
 
-        this.input.keyboard.on("keydown-ENTER", () => {
+        this.input.keyboard.once("keydown-ENTER", () => {
             const selected = this.menuItems[this.selectedIndex].text;
             if (selected === "Resume") {
-                this.background.destroy();
-                this.scene.stop('PauseScene');
                 this.scene.resume('GameScene');
+                this.scene.stop();
             } else if (selected === "Restart") {
                 this.scene.stop('GameScene');
                 this.scene.stop('PauseScene');

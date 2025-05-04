@@ -21,7 +21,10 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.spritesheet('player', './assets/spritesheet.png', { frameWidth: 23, frameHeight: 28 });
+        this.load.spritesheet('player', './assets/spritesheet.png',  { frameWidth: 23, frameHeight: 28 });
+        if (!this.sound.get('gameMusic')) {
+            this.load.audio('gameMusic', 'assets/gameMusic.wav');
+        }
         this.load.image('starfield', './assets/starfield.png');
         this.load.image('bullet', './assets/bullet.png');
         this.load.image("enemy1", "./assets/enemy1.png");
@@ -65,6 +68,22 @@ export default class GameScene extends Phaser.Scene {
             this.initGame();
             this.gameStarted = true;
         });
+
+        const menuMusic = this.sound.get('menuMusic');
+        if (menuMusic && menuMusic.isPlaying) {
+            menuMusic.stop();
+            this.registry.set('isMenuMusicPlaying', false);
+        }
+
+        let gameMusic = this.sound.get('gameMusic');
+        if (!gameMusic) {
+            gameMusic = this.sound.add('gameMusic', { loop: true, volume: 0.5 });
+            gameMusic.play();
+            this.registry.set('isGameMusicPlaying', true);
+        } else if (!gameMusic.isPlaying) {
+            gameMusic.play();
+            this.registry.set('isGameMusicPlaying', true);
+        }
     }
 
     initGame() {
@@ -172,8 +191,8 @@ export default class GameScene extends Phaser.Scene {
             }
         });
         this.input.keyboard.on('keydown-P', () => {
-            this.scene.switch('PauseScene');
-            //this.scene.pause('GameScene');
+            this.scene.launch('PauseScene');
+            this.scene.pause('GameScene');
         });
 
         this.physics.add.overlap(this.bullets, this.enemies, this.bulletHit, null, this);
@@ -204,7 +223,6 @@ export default class GameScene extends Phaser.Scene {
                 if (shooter.y < 300 && shooter.y > 10) {
                     shooter.shoot(this.enemyBullets);
                 }
-
             }
         }
     }
@@ -289,7 +307,6 @@ export default class GameScene extends Phaser.Scene {
         if (this.health == 3) {
             this.player.play('death');
             this.sound.play('gameOver');
-            //this.scene.sleep();
             this.player.once('animationcomplete', () => {
                 this.scene.pause();
                 this.scene.start('GameOver');

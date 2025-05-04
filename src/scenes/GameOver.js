@@ -8,6 +8,7 @@ export default class GameOver extends Phaser.Scene {
 
     preload() {
         this.load.image('background', './assets/spaceTestImage.jpg');
+        this.load.font('mago', 'assets/fonts/mago1.ttf', 'truetype');
         // this.load.audio('backgroundmusic', 'assets/audio/sampleMusic.mp3');
     }
 
@@ -18,12 +19,12 @@ export default class GameOver extends Phaser.Scene {
         this.add.text(this.scale.width / 2, this.scale.height / 2 - 100, "Game Over", {
             fontSize: "38px",
             fill: "#ffffff",
-            fontFamily: "Andale Mono",
+            fontFamily: "mago",
         }).setOrigin(0.5, 0.5);
         this.add.text(this.scale.width / 2, this.scale.height / 2 + 140, "Press Enter To Restart", {
             fontSize: "24px",
             fill: "#ffffff",
-            fontFamily: "Andale Mono",
+            fontFamily: "mago",
         }).setOrigin(0.5, 0.5);
         this.input.keyboard.on('keydown-ENTER', () => {
             this.scene.pause();
