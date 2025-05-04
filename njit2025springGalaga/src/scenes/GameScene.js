@@ -245,6 +245,10 @@ export default class GameScene extends Phaser.Scene {
     }
     
     nextLevel() {
+        if (this.clone) {
+            this.clone.destroy();
+            this.clone = null;
+        }
         this.sound.play('newWave');
         console.log("restart");
         this.difficulty += 1;
