@@ -21,7 +21,7 @@ export default class GameScene extends Phaser.Scene {
     }
 
     preload() {
-        this.load.spritesheet('player', './assets/spritesheet.png',  { frameWidth: 23, frameHeight: 28 });
+        this.load.spritesheet('player', './assets/spritesheet.png', { frameWidth: 23, frameHeight: 28 });
         this.load.image('starfield', './assets/starfield.png');
         this.load.image('bullet', './assets/bullet.png');
         this.load.image("enemy1", "./assets/enemy1.png");
@@ -46,6 +46,7 @@ export default class GameScene extends Phaser.Scene {
         this.load.spritesheet('playerExplode', './assets/PlayerExplosion.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('thumbsup', './assets/thumbsUp.png', { frameWidth: 32, frameHeight: 32 });
         this.load.font('mago', 'assets/fonts/mago1.ttf', 'truetype');
+        this.load.audio("background_music", "./assets/bgm.wav");
     }
 
     create() {
@@ -56,7 +57,7 @@ export default class GameScene extends Phaser.Scene {
             frameRate: 6,
             hideOnComplete: true
         });
-        const intro = this.add.sprite(sizes.width/2, sizes.height - 50, 'thumbsup');
+        const intro = this.add.sprite(sizes.width / 2, sizes.height - 50, 'thumbsup');
         intro.setScale(1.50);
         intro.play('intro');
         intro.once('animationcomplete', () => {
@@ -67,6 +68,9 @@ export default class GameScene extends Phaser.Scene {
     }
 
     initGame() {
+        this.backgroundMusic = this.sound.add('background_music');
+        this.backgroundMusic.loop = true;
+        this.backgroundMusic.play();
         this.starfield = this.add.tileSprite(0, 0, sizes.width, sizes.height, 'starfield').setOrigin(0, 0);
         this.health = 0;
         this.bullets = new Bullets(this);
@@ -90,41 +94,41 @@ export default class GameScene extends Phaser.Scene {
             fill: "#ffffff",
             fontFamily: "mago",
         }).setOrigin(0.5, 0.5);
-        
+
         this.cloneGroup = this.physics.add.group({
             classType: ClonePowerUp,
             runChildUpdate: true,
             //maxSize: 1,
-          });
+        });
         this.shieldGroup = this.physics.add.group({
             classType: ShieldPowerUp,
             runChildUpdate: true,
             //maxSize: 10,
-          });
+        });
         this.tripleGroup = this.physics.add.group({
             classType: TripleShotPowerUp,
             runChildUpdate: true,
             //maxSize: 10,
-          });
+        });
         this.infiniteGroup = this.physics.add.group({
             classType: infiniteShotPowerUp,
             runChildUpdate: true,
             //maxSize: 10,
-          });
+        });
 
         this.healthGroup = this.physics.add.group({
             classType: HealthPowerUp,
             runChildUpdate: true,
             //maxSize: 10,
-          });
-          
+        });
+
         this.anims.create({
             key: 'explode',
             frames: this.anims.generateFrameNumbers('enemyExplode'),
             frameRate: 8,
             hideOnComplete: true
         });
-      
+
         this.anims.create({
             key: 'death',
             frames: this.anims.generateFrameNumbers('playerExplode'),
@@ -144,7 +148,7 @@ export default class GameScene extends Phaser.Scene {
                 this.bullets.fireBullet(this.player.x, this.player.y - 20);
                 this.bullets.fireBullet(this.player.x + 20, this.player.y - 20);
             }
-            else {  
+            else {
                 this.bullets.fireBullet(this.player.x, this.player.y - 20);
             }
             this.sound.play('shootsound');
@@ -180,7 +184,7 @@ export default class GameScene extends Phaser.Scene {
     }
     update() {
         if (!this.gameStarted || !this.starfield) return;
-    
+
         this.starfield.tilePositionY -= 2;
         if (!this.gameStarted) return;
         this.player.setVelocity(0);
@@ -197,15 +201,15 @@ export default class GameScene extends Phaser.Scene {
             const activeEnemies = this.enemies.getChildren().filter(e => e.active);
             if (activeEnemies.length > 0) {
                 const shooter = Phaser.Utils.Array.GetRandom(activeEnemies);
-                if(shooter.y < 300 && shooter.y > 10){
+                if (shooter.y < 300 && shooter.y > 10) {
                     shooter.shoot(this.enemyBullets);
                 }
-                
+
             }
         }
     }
     bulletHit(bullet, enemy) {
-        if(enemy.y < 2){
+        if (enemy.y < 2) {
             return;
         }
         enemy.hits();
@@ -246,7 +250,7 @@ export default class GameScene extends Phaser.Scene {
             }
         }
     }
-    
+
     nextLevel() {
         this.sound.play('newWave');
         console.log("restart");
@@ -257,7 +261,7 @@ export default class GameScene extends Phaser.Scene {
             fill: "#ffffff",
             fontFamily: "mago",
         }).setOrigin(0.5, 0.5);
-        this.time.delayedCall(3000, () => {     
+        this.time.delayedCall(3000, () => {
             this.level.destroy();
             this.enemies.reset();
         });
@@ -282,7 +286,7 @@ export default class GameScene extends Phaser.Scene {
         }
         this.health++;
         player.setFrame(this.health);
-        if(this.health == 3){
+        if (this.health == 3) {
             this.player.play('death');
             this.sound.play('gameOver');
             //this.scene.sleep();
@@ -292,10 +296,10 @@ export default class GameScene extends Phaser.Scene {
             });
         }
         player.setFrame(this.health);
-        if(this.enemies.getChildren().filter(e => e.active).length == 0){
+        if (this.enemies.getChildren().filter(e => e.active).length == 0) {
             console.log("restart");
             this.scene.restart();
         }
-        
-        }
+
+    }
 }
