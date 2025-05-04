@@ -72,9 +72,10 @@ export default class GameScene extends Phaser.Scene {
                 this.clone.shoot(this.clonebullets);
             }
         });
+
         this.input.keyboard.on('keydown-P', () => {
-            this.scene.switch('PauseScene');
-            //this.scene.pause('GameScene');
+            this.scene.pause('GameScene');
+            this.scene.launch('PauseScene');
         });
 
         this.physics.add.overlap(this.bullets, this.enemies, this.bulletHit, null, this);
@@ -95,6 +96,7 @@ export default class GameScene extends Phaser.Scene {
         if (this.clone) {
             this.clone.followPlayer(this.player);
         }
+
         if (Phaser.Math.Between(1, Phaser.Math.MinSub(150, this.difficulty * 15, 20)) === 1) {
         //if (Phaser.Math.Between(1, 20) === 1) {
             const activeEnemies = this.enemies.getChildren().filter(e => e.active);
