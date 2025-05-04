@@ -25,20 +25,25 @@ class Bullet extends Phaser.Physics.Arcade.Sprite {
             this.setVisible(false);
         }
     }
+    
 }
 
 export default class BulletContainer extends Phaser.Physics.Arcade.Group {
-    constructor(scene) {
+    constructor(scene, initialSize = 2) {
         super(scene.physics.world, scene);
-
-        this.createMultiple({
-            frameQuantity: 2,
-            key: 'bullet',
-            active: false,
-            visible: false,
-            classType: Bullet
-        });
+        this.setPoolSize(initialSize);   
     }
+
+    setPoolSize(size) {
+        this.clear(true, true);
+        this.createMultiple({
+          frameQuantity: size,
+          key: 'bullet',
+          active: false,
+          visible: false,
+          classType: Bullet
+        });
+      }
 
     fireBullet(x, y) {
         let bullet = this.getFirstDead();
