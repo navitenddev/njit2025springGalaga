@@ -8,6 +8,7 @@ class ClonePowerUp extends PowerUp {
     }
 
     collect(player, bullets) {
+        console.log("clone")
         super.collect(player);
         this.updateProgressBar(player.scene);
         const clone = new Clone(player.scene, player.x - 100, player.y);
