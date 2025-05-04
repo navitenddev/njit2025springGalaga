@@ -2,12 +2,13 @@ import PowerUp from './PowerUp';
 
 export default class infiniteShotPowerUp extends PowerUp {
   constructor(scene, x, y) {
-    super(scene, x, y, 'infiniteshotPowerup', 5000);
+    super(scene, x, y, 'infiniteshotPowerUp', 5000);
     this.setScale(0.5);
     this.setCollideWorldBounds(true);
   }
 
   collect(player) {
+    console.log("infinite")
     super.collect(player);
     player.setTint(0x880808);
     player.scene.activeTriple = this;

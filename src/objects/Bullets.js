@@ -40,6 +40,18 @@ export default class BulletContainer extends Phaser.Physics.Arcade.Group {
         });
     }
 
+    setPoolSize(size) {
+        this.clear(true, true);
+        this.createMultiple({
+            frameQuantity: size,
+            key: 'bullet',
+            active: false,
+            visible: false,
+            classType: Bullet
+        });
+    }
+
+
     fireBullet(x, y) {
         let bullet = this.getFirstDead();
         if (bullet) {

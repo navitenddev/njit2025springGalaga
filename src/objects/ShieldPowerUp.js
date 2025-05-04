@@ -2,12 +2,13 @@ import PowerUp from './PowerUp';
 
 export default class ShieldPowerUp extends PowerUp {
   constructor(scene, x, y) {
-    super(scene, x, y, 'box', 5000);
+    super(scene, x, y, 'shieldPowerUp', 5000);
     this.setScale(0.3);
     this.setCollideWorldBounds(true);
   }
 
   collect(player) {
+    console.log("shield")
     super.collect(player);
     player.isShield = true;
     player.setTint(0x00ff00);

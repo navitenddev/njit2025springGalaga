@@ -43,8 +43,8 @@ export default class GameScene extends Phaser.Scene {
         this.load.image('clonePowerUp', './assets/player.png');
         this.load.image('shieldPowerUp', './assets/shield.png');
         this.load.image('tripleshotPowerUp', './assets/tripleshot.png');
-        this.load.image('infiniteshotPowerup', './assets/infiniteshot.png');
-        this.load.image('healthPowerup', './assets/health.png');
+        this.load.image('infiniteshotPowerUp', './assets/infiniteshot.png');
+        this.load.image('healthPowerUp', './assets/health.png');
         this.load.spritesheet('enemyExplode', './assets/FireWorks.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('playerExplode', './assets/PlayerExplosion.png', { frameWidth: 32, frameHeight: 32 });
         this.load.spritesheet('thumbsup', './assets/thumbsUp.png', { frameWidth: 32, frameHeight: 32 });
@@ -245,17 +245,17 @@ export default class GameScene extends Phaser.Scene {
             }
             else if (randomPU < 0.4) {
                 //Triple Shot
-                const pu = this.tripleGroup.create(enemy.x, enemy.y, 'box');
+                const pu = this.tripleGroup.create(enemy.x, enemy.y, 'tripleshotPowerUp');
                 pu.setVelocityY(150).setScale(2.3);
             }
             else if (randomPU < 0.6) {
                 //Infinite Shot
-                const pu = this.infiniteGroup.create(enemy.x, enemy.y, 'box');
+                const pu = this.infiniteGroup.create(enemy.x, enemy.y, 'infiniteshotPowerUp');
                 pu.setVelocityY(150).setScale(2.3);
             }
             else if (randomPU < 0.8) {
                 //Health 
-                const pu = this.healthGroup.create(enemy.x, enemy.y, 'health');
+                const pu = this.healthGroup.create(enemy.x, enemy.y, 'healthPowerUp');
                 pu.setVelocityY(150).setScale(2.5);
             }
             else {
